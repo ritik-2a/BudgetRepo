@@ -60,12 +60,12 @@ describe('cardStatement', () => {
   it('includes the outstanding entered when the card was added', () => {
     expect(
       cardStatement({
-        opening: 882482,
+        opening: 750000,
         spendToStatement: 0,
         creditsToStatement: 0,
         paidAfterStatement: 0,
       }),
-    ).toEqual({ statement: 882482, dueRemaining: 882482 });
+    ).toEqual({ statement: 750000, dueRemaining: 750000 });
   });
   it('subtracts payments made after the statement', () => {
     expect(

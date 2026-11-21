@@ -7,12 +7,15 @@ import { Banner, EmptyState, ErrorState, Skeleton, SkeletonList } from '@/compon
 import { useAccountBalances, type AccountWithBalance } from '@/features/accounts/repo';
 import { useCardActivity } from '@/features/analytics/queries';
 import { useBudgetStatus } from '@/features/budgets/repo';
+import { CommuteCard } from '@/features/commute/CommuteCard';
+import { DueReminders } from '@/features/recurring/DueReminders';
 import { QuickTravel } from '@/features/transactions/QuickTravel';
 import { totalsQuery, useTransactions } from '@/features/transactions/repo';
 import { TxListItem } from '@/features/transactions/TxListItem';
 import { useLiveData } from '@/db/useLiveData';
 import { toMonthTotals } from '@/features/summary/queries';
 import { getCardCycle } from '@/lib/billing-cycle';
+import { cardStatement } from '@/lib/commute';
 import { formatDate, formatMonth, monthRange } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
 import { useTheme } from '@/theme';
@@ -78,7 +81,8 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Alerts */}
+      {/* Due items (salary etc.) and alerts */}
+      <DueReminders />
       {cards.map((c) => (
         <CardDueAlert key={c.id} card={c} />
       ))}
@@ -104,7 +108,8 @@ export default function HomeScreen() {
         </Pressable>
       ))}
 
-      <SectionTitle title="Quick travel" />
+      <SectionTitle title="Commute" />
+      <CommuteCard />
       <QuickTravel />
 
       <SectionTitle title="Shortcuts" />
@@ -163,10 +168,15 @@ export default function HomeScreen() {
 
 function CardDueAlert({ card }: { card: AccountWithBalance }) {
   const cycle = getCardCycle(card.statementDay!, card.dueDay!);
-  const act = useCardActivity(card.id, cycle.lastStart, cycle.lastEnd);
-  const a = act.data[0];
+  const act = useCardActivity(card.id, cycle.lastEnd);
+  const a = act.row;
   if (!a) return null;
-  const due = Math.max(0, a.statementSpend - a.statementRefunds - a.paidSinceStatement);
+  const due = cardStatement({
+    opening: card.openingBalance,
+    spendToStatement: a.spendToStatement,
+    creditsToStatement: a.creditsToStatement,
+    paidAfterStatement: a.paidAfterStatement,
+  }).dueRemaining;
   if (due === 0 || cycle.daysToDue > 5) return null;
   const overdue = cycle.daysToDue < 0;
   return (

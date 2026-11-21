@@ -164,25 +164,32 @@ export function useCategoryTrend(parentName: string, end: Date, count = 6) {
   return { data, loading: q.loading, error: q.error };
 }
 
-/** Card activity for the billing-cycle dashboard. */
-export function useCardActivity(cardId: string, lastStart: string, lastEnd: string) {
-  return useLiveData<{
-    statementSpend: number;
-    statementRefunds: number;
-    paidSinceStatement: number;
+/**
+ * Card activity for the billing-cycle maths (see lib/commute.ts → cardStatement).
+ *  - spendToStatement / creditsToStatement: everything on the card up to the statement date
+ *    (so the bill = opening outstanding + spends − payments/refunds up to then)
+ *  - paidAfterStatement: payments/refunds after the statement date
+ *  - currentSpend: spends in the open cycle
+ */
+export function useCardActivity(cardId: string, lastEnd: string) {
+  const q = useLiveData<{
+    spendToStatement: number;
+    creditsToStatement: number;
+    paidAfterStatement: number;
     currentSpend: number;
   }>(
     db
       .select({
-        statementSpend: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} in ('expense','investment','transfer') and ${transactions.date} between ${lastStart} and ${lastEnd} then ${transactions.amount} end), 0)`,
-        statementRefunds: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} = 'income' and ${transactions.date} between ${lastStart} and ${lastEnd} then ${transactions.amount} end), 0)`,
-        paidSinceStatement: sql<number>`coalesce(sum(case when ${transactions.toAccountId} = ${cardId} and ${transactions.type} = 'transfer' and ${transactions.date} > ${lastEnd} then ${transactions.amount} end), 0)`,
+        spendToStatement: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} != 'income' and ${transactions.date} <= ${lastEnd} then ${transactions.amount} end), 0)`,
+        creditsToStatement: sql<number>`coalesce(sum(case when ((${transactions.toAccountId} = ${cardId} and ${transactions.type} = 'transfer') or (${transactions.accountId} = ${cardId} and ${transactions.type} = 'income')) and ${transactions.date} <= ${lastEnd} then ${transactions.amount} end), 0)`,
+        paidAfterStatement: sql<number>`coalesce(sum(case when ((${transactions.toAccountId} = ${cardId} and ${transactions.type} = 'transfer') or (${transactions.accountId} = ${cardId} and ${transactions.type} = 'income')) and ${transactions.date} > ${lastEnd} then ${transactions.amount} end), 0)`,
         currentSpend: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} = 'expense' and ${transactions.date} > ${lastEnd} then ${transactions.amount} end), 0)`,
       })
       .from(transactions)
       .where(eq(transactions.deleted, false)),
-    [cardId, lastStart, lastEnd],
+    [cardId, lastEnd],
   );
+  return { ...q, row: q.data[0] };
 }
 
 /** Average monthly net savings (income − spending) over the last `months` full months. */

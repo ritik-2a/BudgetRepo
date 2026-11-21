@@ -26,6 +26,7 @@ export const ACCOUNT_TYPE_META: Record<
   cash: { label: 'Cash', icon: 'wallet', color: '#2BB389' },
   wallet: { label: 'Wallet / UPI', icon: 'phone-portrait', color: '#3D8BEB' },
   metro_card: { label: 'Metro card', icon: 'train', color: '#3FA7D6' },
+  receivable: { label: 'Money owed to me', icon: 'people', color: '#F0A43A' },
 };
 
 export function validateAccount(a: AccountInput): Partial<Record<keyof AccountInput, string>> {
@@ -102,6 +103,50 @@ export function useAccounts(includeArchived = false) {
       .orderBy(asc(accounts.archived), asc(accounts.sortOrder)),
     [includeArchived],
   );
+}
+
+/** Current balance of one account (same rules as useAccountBalances). */
+export function getAccountBalance(id: string): AccountWithBalance | undefined {
+  const account = getAccount(id);
+  if (!account) return undefined;
+  const flows = db
+    .select({
+      accountId: transactions.accountId,
+      type: transactions.type,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(and(eq(transactions.deleted, false), eq(transactions.accountId, id)))
+    .groupBy(transactions.accountId, transactions.type)
+    .all();
+  const transfersIn = db
+    .select({
+      accountId: transactions.toAccountId,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.deleted, false),
+        eq(transactions.type, 'transfer'),
+        eq(transactions.toAccountId, id),
+      ),
+    )
+    .groupBy(transactions.toAccountId)
+    .all();
+  return computeBalances([account], flows, transfersIn)[0];
+}
+
+/**
+ * Opening balance that makes the account show `target` *now* (balance, or outstanding
+ * for a credit card), keeping existing transactions intact.
+ */
+export function openingForTarget(id: string | null, type: AccountType, target: number): number {
+  if (!id) return target;
+  const current = getAccountBalance(id);
+  if (!current) return target;
+  if (type === 'credit_card') return current.openingBalance + (target - current.outstanding);
+  return current.openingBalance + (target - current.balance);
 }
 
 type FlowRow = { accountId: string; type: string; total: number };

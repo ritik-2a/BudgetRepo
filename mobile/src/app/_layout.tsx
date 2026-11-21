@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { ConfirmProvider, FullScreenError, ToastProvider } from '@/components/feedback';
 import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { AppLockGate } from '@/features/security/AppLock';
+import { ThemeModeSync } from '@/features/settings/ThemeModeSync';
 import { StartupTasks } from '@/features/startup/StartupTasks';
 import { useTheme } from '@/theme';
 
@@ -60,6 +61,7 @@ export default function RootLayout() {
           <DatabaseProvider>
             <AppLockGate>
               <StartupTasks />
+              <ThemeModeSync />
               <Stack
                 screenOptions={{
                   headerShown: false,

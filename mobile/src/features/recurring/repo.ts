@@ -126,3 +126,62 @@ export function processDueRules(today = todayISO()): number {
   }
   return created;
 }
+
+/** Remind-only rules whose date has arrived (e.g. salary expected from the 7th). */
+export function useDueReminders(today = todayISO()) {
+  const q = useRules();
+  return {
+    ...q,
+    data: q.data.filter((r) => r.enabled && r.mode === 'remind_only' && r.nextRun <= today),
+  };
+}
+
+/** Logs a due item today (the day it actually happened) and moves the rule to next month. */
+export function completeDueRule(rule: RecurringRule, amount = rule.template.amount): string {
+  let id = '';
+  db.transaction((tx) => {
+    id = createTransaction({
+      ...rule.template,
+      amount,
+      date: todayISO(),
+      recurringRuleId: rule.id,
+    });
+    tx.update(recurringRules)
+      .set({
+        nextRun: nextOccurrence(rule.nextRun, rule.frequency, rule.day),
+        updatedAt: Date.now(),
+      })
+      .where(eq(recurringRules.id, rule.id))
+      .run();
+  });
+  return id;
+}
+
+/** Skips this occurrence without logging anything. */
+export function skipDueRule(rule: RecurringRule): void {
+  db.update(recurringRules)
+    .set({ nextRun: nextOccurrence(rule.nextRun, rule.frequency, rule.day), updatedAt: Date.now() })
+    .where(eq(recurringRules.id, rule.id))
+    .run();
+}
+
+/** Creates a rule from scratch (used by setup import). */
+export function createRule(input: {
+  template: RuleTemplate;
+  day: number;
+  nextRun: string;
+  mode: RuleMode;
+}): string {
+  const id = newId();
+  db.insert(recurringRules)
+    .values({
+      id,
+      template: input.template,
+      frequency: 'monthly',
+      day: input.day,
+      nextRun: input.nextRun,
+      mode: input.mode,
+    })
+    .run();
+  return id;
+}

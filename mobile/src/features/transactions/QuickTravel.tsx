@@ -31,17 +31,25 @@ export function QuickTravel() {
     accountsQ.data[0];
 
   const log = (categoryId: string, name: string, amount: number) => {
+    // Metro rides come off the metro card when the commute planner is set up.
+    const commute = prefs.commute;
+    const useMetroCard =
+      name === 'Metro' && commute && accountsQ.data.some((a) => a.id === commute.metroAccountId);
+    const from = useMetroCard
+      ? accountsQ.data.find((a) => a.id === commute!.metroAccountId)!
+      : account;
+    if (useMetroCard) amount = commute!.fare;
     try {
       const id = createTransaction({
         type: 'expense',
         amount,
-        accountId: account.id,
+        accountId: from.id,
         categoryId,
         date: todayISO(),
       });
       toast.show('success', {
         title: `${name} logged`,
-        message: `${formatINR(amount)} · ${account.name} · today`,
+        message: `${formatINR(amount)} · ${from.name} · today`,
         action: { label: 'Undo', onPress: () => deleteTransaction(id) },
       });
     } catch (e) {

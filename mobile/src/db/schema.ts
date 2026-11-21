@@ -22,7 +22,14 @@ const syncColumns = {
   deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
 };
 
-export const ACCOUNT_TYPES = ['bank', 'credit_card', 'cash', 'wallet', 'metro_card'] as const;
+export const ACCOUNT_TYPES = [
+  'bank',
+  'credit_card',
+  'cash',
+  'wallet',
+  'metro_card',
+  'receivable',
+] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 export const accounts = sqliteTable('accounts', {

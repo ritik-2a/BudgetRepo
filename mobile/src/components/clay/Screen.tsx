@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 
 import { AppText } from './AppText';
+import { StatusBarScrim } from './StatusBarScrim';
 
 /** Height reserved at the bottom so content isn't hidden behind the floating tab bar. */
 export const TAB_BAR_SPACE = 110;
@@ -117,6 +118,7 @@ export function Screen({
           {children}
         </View>
       )}
+      <StatusBarScrim />
       {footer ? (
         <View
           style={[

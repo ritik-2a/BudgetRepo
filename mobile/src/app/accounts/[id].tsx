@@ -18,6 +18,8 @@ import {
   ACCOUNT_TYPE_META,
   countAccountTransactions,
   createAccount,
+  getAccountBalance,
+  openingForTarget,
   getAccount,
   setAccountArchived,
   updateAccount,
@@ -26,7 +28,7 @@ import {
 } from '@/features/accounts/repo';
 import { CATEGORY_COLORS } from '@/features/categories/repo';
 import { rescheduleReminders } from '@/features/reminders/notifications';
-import { formatINR, parseRupees } from '@/lib/money';
+import { parseRupees } from '@/lib/money';
 import { useTheme } from '@/theme';
 
 const toInput = (p?: number | null) =>
@@ -46,7 +48,19 @@ export default function AccountEditScreen() {
 
   const [type, setType] = useState<AccountType>(initialType);
   const [name, setName] = useState(existing?.name ?? '');
-  const [opening, setOpening] = useState(toInput(existing?.openingBalance));
+  const current = useMemo(
+    () => (existing ? getAccountBalance(existing.id) : undefined),
+    [existing],
+  );
+  const [opening, setOpening] = useState(
+    toInput(
+      current
+        ? current.type === 'credit_card'
+          ? current.outstanding
+          : current.balance
+        : undefined,
+    ),
+  );
   const [limit, setLimit] = useState(toInput(existing?.creditLimit));
   const [statementDay, setStatementDay] = useState<number | null>(existing?.statementDay ?? null);
   const [dueDay, setDueDay] = useState<number | null>(existing?.dueDay ?? null);
@@ -74,7 +88,11 @@ export default function AccountEditScreen() {
     const input: AccountInput = {
       name,
       type,
-      openingBalance: opening.trim().startsWith('-') ? -openingPaise : openingPaise,
+      openingBalance: openingForTarget(
+        existing?.id ?? null,
+        type,
+        opening.trim().startsWith('-') ? -openingPaise : openingPaise,
+      ),
       creditLimit: isCard ? limitPaise : null,
       statementDay: isCard ? statementDay : null,
       dueDay: isCard ? dueDay : null,
@@ -157,8 +175,8 @@ export default function AccountEditScreen() {
       />
       <AppText variant="caption" muted style={styles.hint}>
         {isCard
-          ? 'What you owe on this card before you start tracking. Purchases add to it; bill payments (transfers to the card) reduce it.'
-          : 'Balance before you start tracking. Use a minus sign for an overdraft.'}
+          ? 'What you owe on this card right now. Purchases add to it; bill payments (transfers to the card) reduce it.'
+          : 'What this account holds right now. Changing it adjusts the starting balance; your transactions stay as they are.'}
       </AppText>
 
       {isCard ? (
@@ -226,11 +244,6 @@ export default function AccountEditScreen() {
           fullWidth
           onPress={toggleArchive}
         />
-      ) : null}
-      {existing && existing.openingBalance !== 0 ? (
-        <AppText variant="caption" muted style={styles.hint}>
-          Starting balance: {formatINR(existing.openingBalance)}
-        </AppText>
       ) : null}
     </Screen>
   );

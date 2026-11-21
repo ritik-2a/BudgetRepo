@@ -11,6 +11,7 @@ import {
   ListRow,
   Screen,
   SectionTitle,
+  SegmentedControl,
   SwitchRow,
 } from '@/components/clay';
 import { useConfirm, useToast } from '@/components/feedback';
@@ -118,6 +119,14 @@ export default function SettingsScreen() {
           onPress={() => router.push('/goals')}
         />
         <ListRow
+          icon="train"
+          title="Metro commute"
+          subtitle={
+            prefs.commute ? 'Trips left, recharge date, WFH days' : 'Set up the commute planner'
+          }
+          onPress={() => router.push('/commute')}
+        />
+        <ListRow
           icon="repeat"
           title="Recurring"
           subtitle="Salary, SIPs, rent, subscriptions"
@@ -165,6 +174,22 @@ export default function SettingsScreen() {
           loading={exporting}
           onPress={exportCsv}
         />
+      </ClayCard>
+
+      <SectionTitle title="Appearance" />
+      <ClayCard style={styles.gap}>
+        <SegmentedControl
+          options={[
+            { value: 'system', label: 'System' },
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Night' },
+          ]}
+          value={prefs.themeMode}
+          onChange={(v) => setPref('themeMode', v)}
+        />
+        <AppText variant="caption" muted>
+          Night mode uses a dark clay theme that is easier on the eyes. System follows your phone.
+        </AppText>
       </ClayCard>
 
       <SectionTitle title="App" />

@@ -19,6 +19,21 @@ export type Prefs = {
   syncLastPushAt: number;
   syncLastAt: number | null;
   syncAuto: boolean;
+  /** Appearance: follow the phone, or force light/dark. */
+  themeMode: 'system' | 'light' | 'dark';
+  /** Metro commute planner (null = not set up). */
+  commute: CommutePrefs | null;
+};
+
+export type CommutePrefs = {
+  metroAccountId: string;
+  /** One-way fare, paise */
+  fare: number;
+  tripsPerDay: number;
+  /** 0 = Sun … 6 = Sat */
+  workDays: number[];
+  /** "YYYY-MM-DD" → no travel that day */
+  overrides: Record<string, 'off'>;
 };
 
 export const DEFAULT_PREFS: Prefs = {
@@ -34,6 +49,8 @@ export const DEFAULT_PREFS: Prefs = {
   syncLastPushAt: 0,
   syncLastAt: null,
   syncAuto: true,
+  themeMode: 'system',
+  commute: null,
 };
 
 const PREFIX = 'pref.';

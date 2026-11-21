@@ -12,6 +12,7 @@ import {
   MonthSwitcher,
   TAB_BAR_SPACE,
 } from '@/components/clay';
+import { StatusBarScrim } from '@/components/clay/StatusBarScrim';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/feedback';
 import type { TransactionType } from '@/db/schema';
 import { useAccounts } from '@/features/accounts/repo';
@@ -196,6 +197,7 @@ export default function HistoryScreen() {
           </View>
         )}
       />
+      <StatusBarScrim />
     </View>
   );
 }

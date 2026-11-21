@@ -14,12 +14,14 @@ import {
 } from '@/components/clay';
 import { Banner, EmptyState, ErrorState, SkeletonList } from '@/components/feedback';
 import { getCardCycle } from '@/lib/billing-cycle';
+import { cardStatement } from '@/lib/commute';
 import { formatDate, todayISO } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
 import { useTheme } from '@/theme';
 
 import { useAccountBalances, type AccountWithBalance } from '../accounts/repo';
 import { useCardActivity, useSpendByCategory } from '../analytics/queries';
+import { useRules } from '../recurring/repo';
 
 export function CardDashboard() {
   const { data, loading, error } = useAccountBalances();
@@ -61,7 +63,13 @@ export function CardDashboard() {
         </ChipRow>
       ) : null}
       {card.statementDay && card.dueDay ? (
-        <CardDetail key={card.id} card={card} />
+        <CardDetail
+          key={card.id}
+          card={card}
+          spendable={data
+            .filter((a) => a.type === 'bank' || a.type === 'wallet' || a.type === 'cash')
+            .reduce((s, a) => s + a.balance, 0)}
+        />
       ) : (
         <Banner
           tone="warning"
@@ -81,16 +89,23 @@ export function CardDashboard() {
   );
 }
 
-function CardDetail({ card }: { card: AccountWithBalance }) {
+function CardDetail({ card, spendable }: { card: AccountWithBalance; spendable: number }) {
   const t = useTheme();
+  const nextIncome = useRules()
+    .data.filter((r) => r.enabled && r.template.type === 'income')
+    .sort((x, y) => x.nextRun.localeCompare(y.nextRun))[0];
   const cycle = getCardCycle(card.statementDay!, card.dueDay!);
-  const act = useCardActivity(card.id, cycle.lastStart, cycle.lastEnd);
+  const act = useCardActivity(card.id, cycle.lastEnd);
   const cats = useSpendByCategory(cycle.currentStart, todayISO(), card.id);
-  const a = act.data[0];
+  const a = act.row;
 
-  const statement = a ? Math.max(0, a.statementSpend - a.statementRefunds) : 0;
-  const paid = a?.paidSinceStatement ?? 0;
-  const dueRemaining = Math.max(0, statement - paid);
+  const { statement, dueRemaining } = cardStatement({
+    opening: card.openingBalance,
+    spendToStatement: a?.spendToStatement ?? 0,
+    creditsToStatement: a?.creditsToStatement ?? 0,
+    paidAfterStatement: a?.paidAfterStatement ?? 0,
+  });
+  const paid = Math.min(statement, a?.paidAfterStatement ?? 0);
   const outstanding = Math.max(0, card.outstanding);
   const util = card.creditLimit ? outstanding / card.creditLimit : null;
 
@@ -144,6 +159,19 @@ function CardDetail({ card }: { card: AccountWithBalance }) {
             color={dueRemaining ? dueTone.color : undefined}
           />
         </View>
+        {dueRemaining > spendable ? (
+          <Banner
+            tone="warning"
+            title={`${formatINR(dueRemaining - spendable)} short for this bill`}
+            message={`Your bank, UPI and cash add up to ${formatINR(spendable)}.${
+              nextIncome
+                ? nextIncome.nextRun > cycle.dueDate
+                  ? ` Your next ${formatINR(nextIncome.template.amount)} income is expected on ${formatDate(nextIncome.nextRun)}, after the due date. Pay at least the minimum due by ${formatDate(cycle.dueDate)} to avoid late fees.`
+                  : ` Income of ${formatINR(nextIncome.template.amount)} is expected on ${formatDate(nextIncome.nextRun)}, before the due date.`
+                : ''
+            }`}
+          />
+        ) : null}
         {dueRemaining > 0 ? (
           <ClayButton
             title={`Pay ${formatINR(dueRemaining)}`}

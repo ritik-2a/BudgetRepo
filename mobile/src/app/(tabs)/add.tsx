@@ -1,18 +1,41 @@
-import { Screen } from '@/components/clay';
-import { ComingSoon } from '@/components/ComingSoon';
+import { useLocalSearchParams } from 'expo-router';
+
+import { AppText, Screen } from '@/components/clay';
+import type { TransactionType } from '@/db/schema';
+import { QuickTravel } from '@/features/transactions/QuickTravel';
+import { TransactionForm } from '@/features/transactions/TransactionForm';
+
+const TYPES: TransactionType[] = ['expense', 'income', 'investment', 'transfer'];
 
 export default function AddScreen() {
+  const params = useLocalSearchParams<{
+    type?: string;
+    categoryId?: string;
+    amount?: string;
+    fundId?: string;
+    toAccountId?: string;
+  }>();
+  const type = TYPES.includes(params.type as TransactionType)
+    ? (params.type as TransactionType)
+    : undefined;
+  const amount = params.amount ? Number(params.amount) : undefined;
+
   return (
     <Screen title="Add" subtitle="New transaction">
-      <ComingSoon
-        icon="add-circle"
-        title="Quick Add"
-        phase="Phase 1"
-        items={[
-          'Expense, income, investment or transfer',
-          'One-tap Auto / Metro buttons',
-          'Pay credit card bill as a transfer',
-        ]}
+      <AppText variant="label" muted>
+        Quick travel · tap to log, hold to edit
+      </AppText>
+      <QuickTravel />
+      <TransactionForm
+        // Remount when opened with different prefill params.
+        key={JSON.stringify(params)}
+        initial={{
+          type,
+          categoryId: params.categoryId,
+          amount: Number.isFinite(amount) ? amount : undefined,
+          fundId: params.fundId,
+          toAccountId: params.toAccountId,
+        }}
       />
     </Screen>
   );

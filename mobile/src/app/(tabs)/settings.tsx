@@ -1,113 +1,144 @@
-import { asc, eq } from 'drizzle-orm';
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { AppText, ClayButton, ClayCard, IconBadge, Screen } from '@/components/clay';
 import {
-  Banner,
-  EmptyState,
-  ErrorState,
-  SkeletonList,
-  useConfirm,
-  useToast,
-} from '@/components/feedback';
-import { db } from '@/db/client';
-import { accounts, categories, type AccountType } from '@/db/schema';
-import { useLiveData } from '@/db/useLiveData';
-import { useTheme } from '@/theme';
-
-const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
-  bank: 'Bank',
-  credit_card: 'Credit card',
-  cash: 'Cash',
-  wallet: 'Wallet / UPI',
-  metro_card: 'Metro card',
-};
+  AppText,
+  ClayButton,
+  ClayCard,
+  ListCard,
+  ListRow,
+  Screen,
+  SectionTitle,
+  SwitchRow,
+} from '@/components/clay';
+import { useConfirm, useToast } from '@/components/feedback';
+import { exportTransactionsCSV } from '@/features/export/csv-export';
+import { authenticate, canUseAppLock } from '@/features/security/AppLock';
+import { setPref, usePrefs } from '@/features/settings/repo';
 
 export default function SettingsScreen() {
-  const t = useTheme();
-  const accountsQ = useLiveData(
-    db.select().from(accounts).where(eq(accounts.deleted, false)).orderBy(asc(accounts.sortOrder)),
-  );
-  const categoriesQ = useLiveData(
-    db
-      .select()
-      .from(categories)
-      .where(eq(categories.deleted, false))
-      .orderBy(asc(categories.sortOrder)),
-  );
+  const toast = useToast();
+  const prefs = usePrefs();
+  const [exporting, setExporting] = useState(false);
+
+  const toggleLock = async (on: boolean) => {
+    try {
+      if (on) {
+        const check = await canUseAppLock();
+        if (!check.ok) {
+          toast.warning("App lock can't be turned on", check.reason);
+          return;
+        }
+      }
+      // Confirm it's really the owner before changing the lock either way.
+      if (
+        !(await authenticate(on ? 'Confirm to turn on app lock' : 'Confirm to turn off app lock'))
+      ) {
+        toast.info('App lock unchanged');
+        return;
+      }
+      setPref('appLock', on);
+      toast.success(
+        on ? 'App lock on' : 'App lock off',
+        on ? 'Unlock with fingerprint, face or PIN.' : undefined,
+      );
+    } catch (e) {
+      toast.error("Couldn't change app lock", e);
+    }
+  };
+
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const n = await exportTransactionsCSV();
+      toast.success('Export ready', `${n} transaction${n === 1 ? '' : 's'} in the CSV file`);
+    } catch (e) {
+      toast.error('Export failed', e);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <Screen title="Settings">
-      <View style={styles.section}>
-        <AppText variant="label" muted>
-          Accounts
-        </AppText>
-        {accountsQ.error ? (
-          <ErrorState title="Couldn't load accounts" error={accountsQ.error} />
-        ) : accountsQ.loading ? (
-          <SkeletonList rows={3} />
-        ) : accountsQ.data.length === 0 ? (
-          <EmptyState
-            icon="wallet"
-            title="No accounts yet"
-            message="Accounts are where money comes from: your bank, credit cards, cash or UPI."
-          />
-        ) : (
-          <ClayCard style={styles.list}>
-            {accountsQ.data.map((a) => (
-              <View key={a.id} style={styles.row}>
-                <IconBadge
-                  name={a.icon ?? 'wallet'}
-                  color={a.color ?? t.colors.primary}
-                  size={36}
-                />
-                <View style={styles.flex}>
-                  <AppText variant="subtitle">{a.name}</AppText>
-                  <AppText variant="caption" muted>
-                    {ACCOUNT_TYPE_LABEL[a.type]}
-                  </AppText>
-                </View>
-              </View>
-            ))}
-          </ClayCard>
-        )}
-        <Banner
-          tone="info"
-          message="Adding credit cards and editing accounts arrives in Phase 1."
+      <SectionTitle title="Money setup" />
+      <ListCard>
+        <ListRow
+          icon="wallet"
+          title="Accounts & credit cards"
+          subtitle="Bank, cards, cash, UPI, metro card"
+          onPress={() => router.push('/accounts')}
         />
-      </View>
+        <ListRow
+          icon="pricetags"
+          title="Categories"
+          subtitle="Edit categories and quick-add fares"
+          onPress={() => router.push('/categories')}
+        />
+        <ListRow
+          icon="speedometer"
+          title="Budgets"
+          subtitle="Monthly limits with 80% / 100% alerts"
+          onPress={() => router.push('/budgets')}
+        />
+        <ListRow
+          icon="trending-up"
+          title="Mutual funds"
+          subtitle="Funds, SIPs and current values"
+          onPress={() => router.push('/funds')}
+        />
+        <ListRow
+          icon="flag"
+          title="Goals"
+          subtitle="Savings targets and progress"
+          onPress={() => router.push('/goals')}
+        />
+        <ListRow
+          icon="repeat"
+          title="Recurring"
+          subtitle="Salary, SIPs, rent, subscriptions"
+          onPress={() => router.push('/recurring')}
+        />
+      </ListCard>
 
-      <View style={styles.section}>
-        <AppText variant="label" muted>
-          Categories
+      <SectionTitle title="Notifications & security" />
+      <ListCard>
+        <ListRow
+          icon="notifications"
+          title="Reminders"
+          subtitle="Daily log, card bills, SIP dates"
+          onPress={() => router.push('/reminders')}
+        />
+        <SwitchRow
+          icon="finger-print"
+          title="App lock"
+          subtitle="Fingerprint, face or phone PIN when opening the app"
+          value={prefs.appLock}
+          onChange={toggleLock}
+        />
+      </ListCard>
+
+      <SectionTitle title="Data" />
+      <ClayCard style={styles.gap}>
+        <AppText variant="caption" muted>
+          Export every transaction to a CSV file you can open in Excel or Google Sheets, or keep as
+          a backup.
         </AppText>
-        {categoriesQ.error ? (
-          <ErrorState title="Couldn't load categories" error={categoriesQ.error} />
-        ) : categoriesQ.loading ? (
-          <SkeletonList rows={2} />
-        ) : (
-          <ClayCard style={styles.chips}>
-            {categoriesQ.data.map((c) => (
-              <View
-                key={c.id}
-                style={[
-                  styles.chip,
-                  { backgroundColor: t.colors.surfaceSunken, boxShadow: t.shadow('pressed') },
-                ]}
-              >
-                <IconBadge name={c.icon} color={c.color} size={24} />
-                <AppText variant="caption">{c.parentId ? `↳ ${c.name}` : c.name}</AppText>
-              </View>
-            ))}
-          </ClayCard>
-        )}
-      </View>
+        <ClayButton
+          title="Export to CSV"
+          icon="download"
+          variant="secondary"
+          loading={exporting}
+          onPress={exportCsv}
+        />
+      </ClayCard>
 
       {__DEV__ ? <FeedbackPreview /> : null}
 
       <AppText variant="caption" muted style={styles.version}>
-        Budget Tracker v{Constants.expoConfig?.version ?? '1.0.0'} · data stored on this device
+        Budget Tracker v{Constants.expoConfig?.version ?? '1.0.0'} · all data stays on this device
       </AppText>
     </Screen>
   );
@@ -117,76 +148,48 @@ export default function SettingsScreen() {
 function FeedbackPreview() {
   const toast = useToast();
   const confirm = useConfirm();
-
   return (
-    <View style={styles.section}>
-      <AppText variant="label" muted>
-        Preview notifications (dev only)
-      </AppText>
-      <ClayCard style={styles.list}>
+    <View style={styles.gap}>
+      <SectionTitle title="Preview notifications (dev only)" />
+      <ClayCard style={styles.gap}>
         <View style={styles.buttonRow}>
           <ClayButton
             title="Success"
-            icon="checkmark"
             variant="secondary"
             onPress={() => toast.success('Expense added', '₹50 · Auto · Cash')}
           />
           <ClayButton
             title="Error"
-            icon="alert"
             variant="secondary"
             onPress={() =>
               toast.error("Couldn't save transaction", new Error('Amount must be greater than ₹0'))
             }
           />
-        </View>
-        <View style={styles.buttonRow}>
           <ClayButton
             title="Warning"
-            icon="warning"
             variant="secondary"
             onPress={() => toast.warning('Budget almost used', "You've spent 85% of Food & Dining")}
           />
           <ClayButton
-            title="Info"
-            icon="information"
+            title="Dialog"
             variant="secondary"
-            onPress={() => toast.info('Card bill due in 3 days', 'HDFC Card · ₹12,450')}
+            onPress={async () => {
+              const ok = await confirm({
+                title: 'Delete this transaction?',
+                message: '₹50 · Auto on 21 Nov.',
+                destructive: true,
+              });
+              toast.info(ok ? 'Confirmed' : 'Cancelled');
+            }}
           />
         </View>
-        <ClayButton
-          title="Confirm dialog"
-          icon="trash"
-          variant="secondary"
-          onPress={async () => {
-            const ok = await confirm({
-              title: 'Delete this transaction?',
-              message: '₹50 · Auto on 21 Nov. This cannot be undone.',
-              destructive: true,
-            });
-            if (ok) toast.success('Transaction deleted');
-            else toast.info('Delete cancelled');
-          }}
-        />
       </ClayCard>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { gap: 8 },
-  list: { gap: 14 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  flex: { flex: 1 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-  },
-  buttonRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  gap: { gap: 12 },
+  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   version: { textAlign: 'center' },
 });

@@ -11,6 +11,8 @@ import { useEffect } from 'react';
 
 import { ConfirmProvider, FullScreenError, ToastProvider } from '@/components/feedback';
 import { DatabaseProvider } from '@/db/DatabaseProvider';
+import { AppLockGate } from '@/features/security/AppLock';
+import { StartupTasks } from '@/features/startup/StartupTasks';
 import { useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -56,14 +58,18 @@ export default function RootLayout() {
       <ToastProvider>
         <ConfirmProvider>
           <DatabaseProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: t.colors.background },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-            </Stack>
+            <AppLockGate>
+              <StartupTasks />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: t.colors.background },
+                  animation: 'slide_from_right',
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+              </Stack>
+            </AppLockGate>
           </DatabaseProvider>
         </ConfirmProvider>
       </ToastProvider>

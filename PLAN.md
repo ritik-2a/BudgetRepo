@@ -1,6 +1,6 @@
 # Budget & Expense Tracker — Project Plan
 
-> Status: **v2 — decisions locked** (2026-11-21). Built from the original notes in `Plan`.
+> Status: **v3 — Phases 0–4 built** (2026-11-22). Cloud sync and store builds deferred. Built from the original notes in `Plan`.
 
 ## 0. Decisions
 
@@ -206,10 +206,11 @@ server/        (Phase 4) Fastify API + MongoDB Atlas — separate package
 | Phase | Deliverable | Contents |
 |---|---|---|
 | **0. Setup** ✅ done 2026-11-21 | App runs on your phone | Expo + TS project, lint/format, theme tokens, clay components, tab navigation, SQLite + migrations |
-| **1. MVP** | Daily use starts here | Accounts, categories, add/edit/delete transactions, Quick Add with travel buttons, transaction list with filters, Overall Summary dashboard, app lock |
-| **2. Money control** | Budgets & card | Monthly budgets + 80/100% alerts, Credit Card dashboard (cycle spend, outstanding, due date), bill and daily reminders, recurring transactions |
-| **3. Investments & goals** | Full picture | Funds, MF dashboard (invested per fund and per month, optional manual current value), SIP reminders, Goals with progress and projections, Travel dashboard |
-| **4. Polish & cloud** | Ready to share | Charts and reports across all dashboards, dark mode, CSV export, backend API + MongoDB Atlas sync with login, store builds |
+| **1. MVP** ✅ done | Daily use starts here | Accounts, categories, add/edit/delete transactions, Quick Add with travel buttons, transaction list with filters, Overall Summary dashboard, app lock |
+| **2. Money control** ✅ done | Budgets & card | Monthly budgets + 80/100% alerts, Credit Card dashboard (cycle spend, outstanding, due date), bill and daily reminders, recurring transactions |
+| **3. Investments & goals** ✅ done | Full picture | Funds, MF dashboard (invested per fund and per month, optional manual current value), SIP reminders, Goals with progress and projections, Travel dashboard |
+| **4. Polish** ✅ done | Ready to use | Charts across all dashboards, dark mode, CSV export |
+| **5. Cloud & stores** ⏸ deferred | Later | Backend API + MongoDB Atlas sync with login (needs connection string + hosting); App Store / Play Store builds (needs Expo + Apple developer accounts) |
 
 Each phase ends with: working build on device, unit tests for the money calculations, and a short checklist review.
 

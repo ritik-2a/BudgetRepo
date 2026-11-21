@@ -36,7 +36,21 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Budget Tracker to use Face ID to unlock your financial data."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#5B50E6"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

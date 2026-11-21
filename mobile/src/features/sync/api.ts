@@ -66,8 +66,7 @@ export async function request<T>(
     // non-JSON body
   }
   if (!res.ok) {
-    const serverMsg =
-      json && typeof json === 'object' && 'error' in json ? String(json.error) : '';
+    const serverMsg = json && typeof json === 'object' && 'error' in json ? String(json.error) : '';
     throw new SyncError(serverMsg || `Server error (${res.status})`, res.status);
   }
   return json as T;

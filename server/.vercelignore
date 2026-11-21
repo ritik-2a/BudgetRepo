@@ -1,0 +1,6 @@
+# Never upload secrets; Vercel reads env vars from the project settings.
+.env
+.env.*
+!.env.example
+node_modules
+test

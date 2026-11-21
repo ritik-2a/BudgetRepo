@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "publish-update": "node scripts/publish-update.mjs --deploy",
+    "deploy": "vercel deploy --prod"
   },
   "type": "module",
   "dependencies": {

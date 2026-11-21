@@ -101,3 +101,43 @@ test('users cannot see each other’s data and bad input is rejected', async () 
   const bad = await post('/sync', { cursor: 0, changes: [{ table: 'users', id: 'x', updatedAt: 1, data: {} }] }, t1);
   assert.equal(bad.statusCode, 400);
 });
+
+test('OTA manifest endpoint follows the Expo Updates protocol', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const path = (await import('node:path')).default;
+  const dir = mkdtempSync(path.join(tmpdir(), 'ota-'));
+  mkdirSync(path.join(dir, '1.0.0'));
+  writeFileSync(
+    path.join(dir, '1.0.0', 'android.json'),
+    JSON.stringify({
+      id: '11111111-2222-4333-8444-555555555555',
+      createdAt: '2026-11-22T00:00:00.000Z',
+      runtimeVersion: '1.0.0',
+      launchAsset: { hash: 'h', key: 'k', contentType: 'application/javascript', fileExtension: '.bundle', url: '/ota/1.0.0/x/bundle.hbc' },
+      assets: [],
+      metadata: {},
+      extra: {},
+    }),
+  );
+  const ota = buildApp({ db: client.db(dbName), jwtSecret: 'x'.repeat(40), logger: false, updatesDir: dir });
+  const ok = await ota.inject({
+    method: 'GET',
+    url: '/updates/manifest',
+    headers: { 'expo-platform': 'android', 'expo-runtime-version': '1.0.0', host: 'example.com', 'x-forwarded-proto': 'https' },
+  });
+  assert.equal(ok.statusCode, 200);
+  assert.equal(ok.headers['expo-protocol-version'], '1');
+  assert.match(ok.headers['content-type'], /^multipart\/mixed; boundary=/);
+  assert.match(ok.body, /name="manifest"/);
+  assert.match(ok.body, /https:\/\/example\.com\/ota\/1\.0\.0\/x\/bundle\.hbc/);
+
+  const missing = await ota.inject({
+    method: 'GET',
+    url: '/updates/manifest',
+    headers: { 'expo-platform': 'android', 'expo-runtime-version': '9.9.9' },
+  });
+  assert.equal(missing.statusCode, 404);
+  const bad = await ota.inject({ method: 'GET', url: '/updates/manifest', headers: { 'expo-platform': 'web' } });
+  assert.equal(bad.statusCode, 400);
+});

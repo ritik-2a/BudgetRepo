@@ -17,11 +17,33 @@ import { useConfirm, useToast } from '@/components/feedback';
 import { exportTransactionsCSV } from '@/features/export/csv-export';
 import { authenticate, canUseAppLock } from '@/features/security/AppLock';
 import { setPref, usePrefs } from '@/features/settings/repo';
+import { applyUpdate, checkAndDownload, currentVersionLabel } from '@/features/updates/ota';
 
 export default function SettingsScreen() {
   const toast = useToast();
   const prefs = usePrefs();
   const [exporting, setExporting] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  const checkUpdates = async () => {
+    setChecking(true);
+    try {
+      const r = await checkAndDownload();
+      if (r.kind === 'disabled') toast.info('Updates unavailable', r.reason);
+      else if (r.kind === 'up-to-date') toast.success('You have the latest version');
+      else
+        toast.show('success', {
+          title: 'Update downloaded',
+          message: r.message ?? 'Restart to use it.',
+          duration: 15000,
+          action: { label: 'Restart', onPress: () => applyUpdate().catch(() => {}) },
+        });
+    } catch (e) {
+      toast.error("Couldn't check for updates", e);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const toggleLock = async (on: boolean) => {
     try {
@@ -142,6 +164,21 @@ export default function SettingsScreen() {
           variant="secondary"
           loading={exporting}
           onPress={exportCsv}
+        />
+      </ClayCard>
+
+      <SectionTitle title="App" />
+      <ClayCard style={styles.gap}>
+        <AppText variant="caption" muted>
+          Running: {currentVersionLabel()}. New versions download automatically when you open the
+          app.
+        </AppText>
+        <ClayButton
+          title="Check for updates"
+          icon="cloud-download"
+          variant="secondary"
+          loading={checking}
+          onPress={checkUpdates}
         />
       </ClayCard>
 

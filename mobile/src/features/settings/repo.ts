@@ -28,7 +28,7 @@ export const DEFAULT_PREFS: Prefs = {
   billReminders: true,
   sipReminders: true,
   lastAccountId: null,
-  syncServerUrl: '',
+  syncServerUrl: 'https://budget-tracker-ritik.vercel.app',
   syncEmail: null,
   syncCursor: 0,
   syncLastPushAt: 0,

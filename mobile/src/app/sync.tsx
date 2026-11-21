@@ -181,14 +181,14 @@ export default function SyncScreen() {
           label="Server address"
           value={server}
           onChangeText={setServer}
-          placeholder="e.g. 192.168.1.9:4000"
+          placeholder="https://budget-tracker-ritik.vercel.app"
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="url"
         />
         <AppText variant="caption" muted>
-          While testing at home, this is your PC&apos;s Wi-Fi address with port 4000. The server
-          must be running on the PC.
+          Your Budget Tracker server on Vercel. Leave this as is unless you host the server
+          somewhere else.
         </AppText>
         <ClayButton
           title="Test connection"

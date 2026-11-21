@@ -7,6 +7,7 @@ import { processDueRules } from '../recurring/repo';
 import { getPrefs } from '../settings/repo';
 import { getToken } from '../sync/api';
 import { syncNow } from '../sync/engine';
+import { applyUpdate, checkAndDownload } from '../updates/ota';
 import { configureNotifications, rescheduleReminders } from '../reminders/notifications';
 
 /**
@@ -14,6 +15,7 @@ import { configureNotifications, rescheduleReminders } from '../reminders/notifi
  *  - creates due recurring transactions (salary, SIPs, rent…)
  *  - refreshes scheduled reminders
  *  - syncs with the cloud when signed in
+ *  - downloads OTA app updates and offers a restart
  */
 export function StartupTasks() {
   const toast = useToast();
@@ -52,6 +54,20 @@ export function StartupTasks() {
             // Offline or server not running: try again next time; manual sync shows errors.
           });
       }
+      checkAndDownload()
+        .then((r) => {
+          if (r.kind === 'downloaded') {
+            toast.show('info', {
+              title: 'App update ready',
+              message: r.message ?? 'Restart to get the latest improvements.',
+              duration: 15000,
+              action: { label: 'Restart', onPress: () => applyUpdate().catch(() => {}) },
+            });
+          }
+        })
+        .catch(() => {
+          // No network / server down: the app keeps running the current version.
+        });
       configureNotifications()
         .then(() => rescheduleReminders())
         .catch(() => {

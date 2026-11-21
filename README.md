@@ -34,3 +34,12 @@ cd android
 ./gradlew.bat assembleRelease -PreactNativeArchitectures=arm64-v8a
 # output: android/app/build/outputs/apk/release/app-release.apk
 ```
+
+## Ship an update without a new APK (OTA)
+
+```bash
+cd server
+npm run publish-update -- --message "What changed"
+```
+
+Phones download it the next time the app opens. See [server/README.md](server/README.md).

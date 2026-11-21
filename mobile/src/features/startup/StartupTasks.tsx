@@ -4,12 +4,16 @@ import { AppState } from 'react-native';
 import { useToast } from '@/components/feedback';
 
 import { processDueRules } from '../recurring/repo';
+import { getPrefs } from '../settings/repo';
+import { getToken } from '../sync/api';
+import { syncNow } from '../sync/engine';
 import { configureNotifications, rescheduleReminders } from '../reminders/notifications';
 
 /**
  * Runs when the app opens and each time it returns to the foreground:
  *  - creates due recurring transactions (salary, SIPs, rent…)
  *  - refreshes scheduled reminders
+ *  - syncs with the cloud when signed in
  */
 export function StartupTasks() {
   const toast = useToast();
@@ -30,6 +34,23 @@ export function StartupTasks() {
         }
       } catch (e) {
         toast.error("Couldn't add recurring transactions", e);
+      }
+      // Background sync: silent unless it brings in new data.
+      const prefs = getPrefs();
+      if (prefs.syncAuto && prefs.syncServerUrl) {
+        getToken()
+          .then((tk) => (tk ? syncNow() : null))
+          .then((r) => {
+            if (r && r.pulled > 0) {
+              toast.info(
+                'Synced',
+                `${r.pulled} change${r.pulled === 1 ? '' : 's'} from your other devices`,
+              );
+            }
+          })
+          .catch(() => {
+            // Offline or server not running: try again next time; manual sync shows errors.
+          });
       }
       configureNotifications()
         .then(() => rescheduleReminders())

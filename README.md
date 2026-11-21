@@ -5,6 +5,7 @@ Built with React Native + Expo (TypeScript), local SQLite storage and a claymorp
 
 - **Plan & roadmap:** [PLAN.md](PLAN.md)
 - **App source:** [mobile/](mobile/)
+- **Sync server:** [server/](server/) (Fastify + MongoDB Atlas)
 
 ## Run in development
 

@@ -12,6 +12,13 @@ export type Prefs = {
   billReminders: boolean;
   sipReminders: boolean;
   lastAccountId: string | null;
+  /** Cloud sync */
+  syncServerUrl: string;
+  syncEmail: string | null;
+  syncCursor: number;
+  syncLastPushAt: number;
+  syncLastAt: number | null;
+  syncAuto: boolean;
 };
 
 export const DEFAULT_PREFS: Prefs = {
@@ -21,6 +28,12 @@ export const DEFAULT_PREFS: Prefs = {
   billReminders: true,
   sipReminders: true,
   lastAccountId: null,
+  syncServerUrl: '',
+  syncEmail: null,
+  syncCursor: 0,
+  syncLastPushAt: 0,
+  syncLastAt: null,
+  syncAuto: true,
 };
 
 const PREFIX = 'pref.';

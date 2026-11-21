@@ -1,6 +1,6 @@
 # Budget & Expense Tracker — Project Plan
 
-> Status: **v3 — Phases 0–4 built** (2026-11-22). Cloud sync and store builds deferred. Built from the original notes in `Plan`.
+> Status: **v4 — Phases 0–4 built, cloud sync working locally** (2026-11-22). Server hosting and store builds deferred. Built from the original notes in `Plan`.
 
 ## 0. Decisions
 
@@ -210,7 +210,8 @@ server/        (Phase 4) Fastify API + MongoDB Atlas — separate package
 | **2. Money control** ✅ done | Budgets & card | Monthly budgets + 80/100% alerts, Credit Card dashboard (cycle spend, outstanding, due date), bill and daily reminders, recurring transactions |
 | **3. Investments & goals** ✅ done | Full picture | Funds, MF dashboard (invested per fund and per month, optional manual current value), SIP reminders, Goals with progress and projections, Travel dashboard |
 | **4. Polish** ✅ done | Ready to use | Charts across all dashboards, dark mode, CSV export |
-| **5. Cloud & stores** ⏸ deferred | Later | Backend API + MongoDB Atlas sync with login (needs connection string + hosting); App Store / Play Store builds (needs Expo + Apple developer accounts) |
+| **5a. Cloud sync** ✅ done | Backup & multi-device | Fastify server + MongoDB Atlas, email/password accounts, two-way last-write-wins sync, auto-sync. Runs on the PC for now |
+| **5b. Hosting & stores** ⏸ deferred | Later | Deploy the server with HTTPS (Render/Railway); App Store / Play Store builds (needs Expo + Apple developer accounts) |
 
 Each phase ends with: working build on device, unit tests for the money calculations, and a short checklist review.
 

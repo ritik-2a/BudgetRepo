@@ -121,6 +121,16 @@ export default function SettingsScreen() {
       </ListCard>
 
       <SectionTitle title="Data" />
+      <ListCard>
+        <ListRow
+          icon="cloud"
+          title="Cloud sync"
+          subtitle={
+            prefs.syncEmail ? `Signed in as ${prefs.syncEmail}` : 'Back up to MongoDB Atlas'
+          }
+          onPress={() => router.push('/sync')}
+        />
+      </ListCard>
       <ClayCard style={styles.gap}>
         <AppText variant="caption" muted>
           Export every transaction to a CSV file you can open in Excel or Google Sheets, or keep as
@@ -138,7 +148,7 @@ export default function SettingsScreen() {
       {__DEV__ ? <FeedbackPreview /> : null}
 
       <AppText variant="caption" muted style={styles.version}>
-        Budget Tracker v{Constants.expoConfig?.version ?? '1.0.0'} · all data stays on this device
+        Budget Tracker v{Constants.expoConfig?.version ?? '1.0.0'} · stored on this device
       </AppText>
     </Screen>
   );

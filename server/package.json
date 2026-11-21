@@ -1,0 +1,23 @@
+{
+  "name": "budget-tracker-server",
+  "version": "1.0.0",
+  "description": "Sync API for Budget Tracker (Fastify + MongoDB Atlas)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.10",
+    "fastify": "^5.12.8",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.9.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

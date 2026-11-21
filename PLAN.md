@@ -211,7 +211,7 @@ server/        (Phase 4) Fastify API + MongoDB Atlas — separate package
 | **3. Investments & goals** ✅ done | Full picture | Funds, MF dashboard (invested per fund and per month, optional manual current value), SIP reminders, Goals with progress and projections, Travel dashboard |
 | **4. Polish** ✅ done | Ready to use | Charts across all dashboards, dark mode, CSV export |
 | **5a. Cloud sync** ✅ done | Backup & multi-device | Fastify server on Vercel + MongoDB Atlas, email/password accounts, two-way last-write-wins sync, auto-sync |
-| **5b. OTA updates** ✅ done | No reinstalling | expo-updates served from the same Vercel project; `npm run publish-update` |
+| **5b. OTA updates** ✅ done | No reinstalling | expo-updates served by the Vercel server from MongoDB Atlas (GridFS); `npm run publish-update`. GitHub `main` auto-deploys the server |
 | **5c. Store builds** ⏸ deferred | Later | Play Store / App Store release builds (signing key, Expo + Apple developer accounts) |
 
 Each phase ends with: working build on device, unit tests for the money calculations, and a short checklist review.

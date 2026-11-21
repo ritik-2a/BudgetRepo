@@ -102,26 +102,31 @@ test('users cannot see each other’s data and bad input is rejected', async () 
   assert.equal(bad.statusCode, 400);
 });
 
-test('OTA manifest endpoint follows the Expo Updates protocol', async () => {
-  const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
-  const { tmpdir } = await import('node:os');
-  const path = (await import('node:path')).default;
-  const dir = mkdtempSync(path.join(tmpdir(), 'ota-'));
-  mkdirSync(path.join(dir, '1.0.0'));
-  writeFileSync(
-    path.join(dir, '1.0.0', 'android.json'),
-    JSON.stringify({
-      id: '11111111-2222-4333-8444-555555555555',
-      createdAt: '2026-11-22T00:00:00.000Z',
-      runtimeVersion: '1.0.0',
-      launchAsset: { hash: 'h', key: 'k', contentType: 'application/javascript', fileExtension: '.bundle', url: '/ota/1.0.0/x/bundle.hbc' },
-      assets: [],
-      metadata: {},
-      extra: {},
-    }),
-  );
-  const ota = buildApp({ db: client.db(dbName), jwtSecret: 'x'.repeat(40), logger: false, updatesDir: dir });
-  const ok = await ota.inject({
+test('OTA manifest and assets are served from MongoDB', async () => {
+  const { gzipSync, gunzipSync } = await import('node:zlib');
+  const { otaStore } = await import('../src/ota.js');
+  const db = client.db(dbName);
+  const { updates, bucket } = otaStore(db);
+  const key = 'a'.repeat(32);
+  const body = Buffer.from('console.log("bundle")');
+  await new Promise((resolve, reject) => {
+    const up = bucket.openUploadStream(key, { metadata: { contentType: 'application/javascript' } });
+    up.on('finish', resolve).on('error', reject);
+    up.end(gzipSync(body));
+  });
+  const manifest = (id) => ({
+    id,
+    createdAt: '2026-11-22T00:00:00.000Z',
+    runtimeVersion: '1.0.0',
+    launchAsset: { hash: 'h', key, contentType: 'application/javascript', fileExtension: '.bundle', url: `/ota/assets/${key}` },
+    assets: [],
+    metadata: {},
+    extra: {},
+  });
+  await updates.insertOne({ runtimeVersion: '1.0.0', platform: 'android', createdAt: new Date(1000), manifest: manifest('11111111-1111-4111-8111-111111111111') });
+  await updates.insertOne({ runtimeVersion: '1.0.0', platform: 'android', createdAt: new Date(2000), manifest: manifest('22222222-2222-4222-8222-222222222222') });
+
+  const ok = await app.inject({
     method: 'GET',
     url: '/updates/manifest',
     headers: { 'expo-platform': 'android', 'expo-runtime-version': '1.0.0', host: 'example.com', 'x-forwarded-proto': 'https' },
@@ -130,14 +135,24 @@ test('OTA manifest endpoint follows the Expo Updates protocol', async () => {
   assert.equal(ok.headers['expo-protocol-version'], '1');
   assert.match(ok.headers['content-type'], /^multipart\/mixed; boundary=/);
   assert.match(ok.body, /name="manifest"/);
-  assert.match(ok.body, /https:\/\/example\.com\/ota\/1\.0\.0\/x\/bundle\.hbc/);
+  assert.match(ok.body, /22222222-2222-4222-8222-222222222222/, 'serves the newest update');
+  assert.match(ok.body, new RegExp(`https://example\.com/ota/assets/${key}`));
 
-  const missing = await ota.inject({
+  const gz = await app.inject({ method: 'GET', url: `/ota/assets/${key}`, headers: { 'accept-encoding': 'gzip' } });
+  assert.equal(gz.statusCode, 200);
+  assert.equal(gz.headers['content-encoding'], 'gzip');
+  assert.equal(gunzipSync(gz.rawPayload).toString(), body.toString());
+  const plain = await app.inject({ method: 'GET', url: `/ota/assets/${key}` });
+  assert.equal(plain.body, body.toString());
+
+  assert.equal((await app.inject({ method: 'GET', url: `/ota/assets/${'b'.repeat(32)}` })).statusCode, 404);
+  assert.equal((await app.inject({ method: 'GET', url: '/ota/assets/not-a-key' })).statusCode, 400);
+  const missing = await app.inject({
     method: 'GET',
     url: '/updates/manifest',
     headers: { 'expo-platform': 'android', 'expo-runtime-version': '9.9.9' },
   });
   assert.equal(missing.statusCode, 404);
-  const bad = await ota.inject({ method: 'GET', url: '/updates/manifest', headers: { 'expo-platform': 'web' } });
+  const bad = await app.inject({ method: 'GET', url: '/updates/manifest', headers: { 'expo-platform': 'web' } });
   assert.equal(bad.statusCode, 400);
 });

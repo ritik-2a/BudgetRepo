@@ -35,32 +35,28 @@ Conflicts: last write wins on each row's `updatedAt`. Pull uses a per-user seque
 
 ## Production (Vercel)
 
-Live at **https://budget-tracker-ritik.vercel.app** (project `budget-tracker-ritik`).
-`api/index.js` wraps the Fastify app as a serverless function; `vercel.json` routes every
-path to it except `/ota/*`, which is served as static files.
+Live at **https://budget-tracker-ritik.vercel.app** (project `budget-tracker-ritik`, Root
+Directory `server`). The project is connected to GitHub: **every push to `main` deploys
+automatically**. `api/index.js` wraps the Fastify app as a serverless function and
+`vercel.json` routes every path to it.
 
 Secrets are Vercel environment variables (`MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`), never
-uploaded files (`.vercelignore` excludes `.env`). To change one:
-
-```bash
-npx vercel env rm MONGODB_URI production
-npx vercel env add MONGODB_URI production   # paste the new value when asked
-npm run deploy
-```
+committed or uploaded (`.vercelignore` excludes `.env`). To change one, edit it in the Vercel
+dashboard → Project → Settings → Environment Variables, then redeploy (or push a commit).
 
 ## OTA app updates
 
-The app uses `expo-updates` pointed at `/updates/manifest` on this server. To ship a JS/UI
-change without a new APK:
+The app uses `expo-updates` pointed at `/updates/manifest`. Updates are stored in MongoDB
+Atlas (manifest in `ota_updates`, gzip-compressed files in the GridFS bucket `ota`), so code
+deploys never remove them and publishing needs no deploy:
 
 ```bash
 cd server
 npm run publish-update -- --message "What changed"
 ```
 
-This bundles `mobile/`, writes the manifest into `updates/<runtime>/android.json`, copies
-the bundle to `public/ota/...` (keeps the 3 newest), and deploys to Vercel. Phones download
-it the next time the app opens and show **Restart** to apply it.
+This bundles `mobile/`, uploads only new/changed files, and keeps the newest 3 updates.
+Phones download it the next time the app opens and show **Restart** to apply it.
 
 Build a new APK instead (and bump `version` in `mobile/app.json`) when you add or upgrade a
 native module; phones only accept updates built for their runtime version.

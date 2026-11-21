@@ -1,7 +1,4 @@
 import 'dotenv/config';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { MongoClient } from 'mongodb';
 
 import { buildApp, ensureIndexes } from './app.js';
@@ -14,8 +11,7 @@ await client.connect();
 const db = client.db(MONGODB_DB);
 await ensureIndexes(db);
 
-const updatesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'updates');
-const app = buildApp({ db, jwtSecret: JWT_SECRET, updatesDir });
+const app = buildApp({ db, jwtSecret: JWT_SECRET });
 await app.listen({ port: Number(PORT), host: '0.0.0.0' });
 
 const shutdown = async () => {

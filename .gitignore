@@ -1,0 +1,12 @@
+# Build outputs (share APKs via GitHub Releases, not git)
+*.apk
+*.aab
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Secrets (MongoDB Atlas connection string etc.)
+.env
+.env.*
+!.env.example

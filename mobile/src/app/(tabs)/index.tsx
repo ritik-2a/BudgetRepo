@@ -33,6 +33,13 @@ export default function HomeScreen() {
   const recent = useTransactions({ start: '0000-01-01', end: '9999-12-31', limit: 6 });
   const budget = useBudgetStatus(now);
   const balances = useAccountBalances();
+  // Real money right now, shown under the monthly figure so the two aren't confused.
+  const inBank = balances.data
+    .filter((a) => a.type === 'bank' || a.type === 'wallet' || a.type === 'cash')
+    .reduce((sum, a) => sum + a.balance, 0);
+  const cardDue = balances.data
+    .filter((a) => a.type === 'credit_card')
+    .reduce((sum, a) => sum + Math.max(0, a.outstanding), 0);
   const cards = balances.data.filter((a) => a.type === 'credit_card' && a.statementDay && a.dueDay);
 
   const remaining = totals.income - totals.spent - totals.invested;
@@ -68,6 +75,29 @@ export default function HomeScreen() {
               ? 'Add your salary to see your savings rate'
               : `Savings rate ${savingsRate}% · after spending and investing`}
           </AppText>
+          <Pressable
+            onPress={() => router.push('/accounts')}
+            accessibilityRole="button"
+            accessibilityLabel={`In bank ${formatINR(inBank)}, card due ${formatINR(cardDue)}`}
+            style={[styles.heroSplit, { borderTopColor: t.colors.heroTrack }]}
+          >
+            <View style={styles.heroCol}>
+              <AppText variant="caption" color={t.colors.onHeroMuted}>
+                In bank
+              </AppText>
+              <AppText variant="subtitle" color={t.colors.onHero}>
+                {formatINR(inBank)}
+              </AppText>
+            </View>
+            <View style={[styles.heroCol, styles.heroRight]}>
+              <AppText variant="caption" color={t.colors.onHeroMuted}>
+                Card due
+              </AppText>
+              <AppText variant="subtitle" color={t.colors.onHero}>
+                {formatINR(cardDue)}
+              </AppText>
+            </View>
+          </Pressable>
         </ClayCard>
       )}
 
@@ -260,7 +290,15 @@ function Shortcut({
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: 8, paddingVertical: 24 },
+  hero: { gap: 8, paddingTop: 22, paddingBottom: 16 },
+  heroSplit: {
+    flexDirection: 'row',
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  heroCol: { flex: 1, gap: 2 },
+  heroRight: { alignItems: 'flex-end' },
   dim: { opacity: 0.9 },
   tiles: { flexDirection: 'row', gap: 12 },
   tile: { flex: 1, gap: 6, padding: 14 },

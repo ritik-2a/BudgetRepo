@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, ClayButton, ClayCard, IconBadge } from '@/components/clay';
 import { Skeleton } from '@/components/feedback';
-import { formatDate } from '@/lib/dates';
+import { daysBetween, formatDate, fromISODate } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
 import { useTheme } from '@/theme';
 
@@ -11,6 +11,14 @@ import { useRules } from '../recurring/repo';
 import { useCardDues, type CardWithDues } from './cardDues';
 
 const shortDate = (iso: string) => formatDate(iso).replace(/ \d{4}$/, '');
+
+/** "Salary expected in 15 days" (no amount shown on Home). */
+function incomeEta(nextRunIso: string): string {
+  const days = daysBetween(new Date(), fromISODate(nextRunIso));
+  if (days <= 0) return 'Salary expected today';
+  if (days === 1) return 'Salary expected tomorrow';
+  return `Salary expected in ${days} days`;
+}
 
 /**
  * Home's top section: real money in the bank, each credit card split into the bill to pay
@@ -27,6 +35,7 @@ export function MoneyOverview() {
     (a) => a.type === 'bank' || a.type === 'wallet' || a.type === 'cash',
   );
   const inBank = bankAccounts.reduce((s, a) => s + a.balance, 0);
+  const hasCashOrUpi = bankAccounts.some((a) => a.type !== 'bank' && a.balance !== 0);
   const billsToPay = cards.reduce((s, c) => s + c.dues.billToPay, 0);
   const afterBills = inBank - billsToPay;
 
@@ -45,7 +54,7 @@ export function MoneyOverview() {
       <Pressable onPress={() => router.push('/accounts')} accessibilityRole="button">
         <ClayCard tint={t.colors.hero} style={styles.hero}>
           <AppText variant="label" color={t.colors.onHeroMuted}>
-            Money in bank
+            {hasCashOrUpi ? 'Bank & cash' : 'Money in bank'}
           </AppText>
           <AppText variant="display" color={t.colors.onHero}>
             {formatINR(inBank)}
@@ -65,8 +74,7 @@ export function MoneyOverview() {
                 </AppText>
                 {afterBills < 0 && nextIncome ? (
                   <AppText variant="caption" color={t.colors.onHeroMuted}>
-                    Salary {formatINR(nextIncome.template.amount)} expected{' '}
-                    {shortDate(nextIncome.nextRun)}
+                    {incomeEta(nextIncome.nextRun)}
                   </AppText>
                 ) : null}
               </View>

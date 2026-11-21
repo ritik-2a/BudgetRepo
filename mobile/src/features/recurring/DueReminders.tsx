@@ -45,7 +45,7 @@ export function DueReminders() {
             const id = completeDueRule(rule);
             toast.show('success', {
               title: isIncome ? `${title} received` : `${title} logged`,
-              message: `${formatINR(tpl.amount)}${account ? ` · ${account}` : ''} · today`,
+              message: `${isIncome ? 'Added' : formatINR(tpl.amount)}${account ? ` · ${account}` : ''} · today`,
               action: { label: 'Undo', onPress: () => deleteTransaction(id) },
             });
           } catch (e) {
@@ -79,8 +79,8 @@ export function DueReminders() {
                   {title} {isIncome ? 'expected' : 'due'}
                 </AppText>
                 <AppText variant="caption" muted>
-                  {variable ? 'Amount varies' : formatINR(tpl.amount)} · since{' '}
-                  {formatDate(rule.nextRun)}
+                  {isIncome ? 'Expected' : variable ? 'Amount varies' : formatINR(tpl.amount)} ·
+                  since {formatDate(rule.nextRun)}
                   {late > 0 ? ` (${late} day${late === 1 ? '' : 's'})` : ''}
                 </AppText>
               </View>

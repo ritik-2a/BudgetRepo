@@ -32,20 +32,22 @@ export function ClayButton({
   ...rest
 }: ClayButtonProps) {
   const t = useTheme();
+  const solid = variant !== 'secondary';
   const bg =
     variant === 'primary'
       ? t.colors.primary
       : variant === 'danger'
         ? t.colors.danger
         : t.colors.surface;
-  const fg = variant === 'secondary' ? t.colors.text : t.colors.onPrimary;
-  const height = size === 'lg' ? 56 : 46;
+  const fg = solid ? t.colors.onPrimary : t.colors.text;
+  const height = size === 'lg' ? 52 : 44;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       disabled={disabled || loading}
+      android_ripple={{ color: solid ? 'rgba(255,255,255,0.18)' : t.colors.ripple }}
       onPress={(e) => {
         Haptics.selectionAsync().catch(() => {});
         onPress?.(e);
@@ -56,12 +58,12 @@ export function ClayButton({
           height,
           backgroundColor: bg,
           borderRadius: t.radius.md,
-          paddingHorizontal: title ? t.spacing.xl : 0,
+          borderWidth: solid ? 0 : 1,
+          borderColor: t.colors.borderStrong,
+          paddingHorizontal: title ? t.spacing.lg + 4 : 0,
           width: title ? undefined : height,
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
-          boxShadow: t.shadow(state.pressed ? 'pressed' : 'raised'),
-          opacity: disabled ? 0.5 : 1,
-          transform: [{ scale: state.pressed ? 0.97 : 1 }],
+          opacity: disabled ? 0.45 : state.pressed ? 0.9 : 1,
         },
         typeof style === 'function' ? style(state) : style,
       ]}
@@ -71,9 +73,9 @@ export function ClayButton({
         <ActivityIndicator color={fg} />
       ) : (
         <View style={styles.row}>
-          {icon ? <Ionicons name={icon} size={20} color={fg} /> : null}
+          {icon ? <Ionicons name={icon} size={18} color={fg} /> : null}
           {title ? (
-            <AppText variant="subtitle" color={fg}>
+            <AppText variant="subtitle" color={fg} weight="600">
               {title}
             </AppText>
           ) : null}
@@ -84,6 +86,6 @@ export function ClayButton({
 }
 
 const styles = StyleSheet.create({
-  base: { alignItems: 'center', justifyContent: 'center' },
+  base: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

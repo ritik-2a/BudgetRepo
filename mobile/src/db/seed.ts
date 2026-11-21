@@ -18,36 +18,36 @@ type SeedCategory = {
 };
 
 const DEFAULT_CATEGORIES: SeedCategory[] = [
-  { name: 'Food & Dining', kind: 'expense', icon: 'restaurant', color: '#F28B66' },
-  { name: 'Groceries', kind: 'expense', icon: 'basket', color: '#6BBF59' },
-  { name: 'Bills & Utilities', kind: 'expense', icon: 'flash', color: '#F2B84B' },
-  { name: 'Rent', kind: 'expense', icon: 'home', color: '#8C7CF0' },
-  { name: 'Shopping', kind: 'expense', icon: 'bag-handle', color: '#E76FA6' },
-  { name: 'Entertainment', kind: 'expense', icon: 'film', color: '#5DA9E9' },
-  { name: 'Subscriptions', kind: 'expense', icon: 'repeat', color: '#9C89B8' },
-  { name: 'Health', kind: 'expense', icon: 'medkit', color: '#4CC9A6' },
+  { name: 'Food & Dining', kind: 'expense', icon: 'restaurant', color: '#EB6834' },
+  { name: 'Groceries', kind: 'expense', icon: 'basket', color: '#1BAF7A' },
+  { name: 'Bills & Utilities', kind: 'expense', icon: 'flash', color: '#EDA100' },
+  { name: 'Rent', kind: 'expense', icon: 'home', color: '#6250D6' },
+  { name: 'Shopping', kind: 'expense', icon: 'bag-handle', color: '#E87BA4' },
+  { name: 'Entertainment', kind: 'expense', icon: 'film', color: '#E34948' },
+  { name: 'Subscriptions', kind: 'expense', icon: 'repeat', color: '#64748B' },
+  { name: 'Health', kind: 'expense', icon: 'medkit', color: '#008300' },
   {
     name: 'Travel',
     kind: 'expense',
     icon: 'car',
-    color: '#F0A43A',
+    color: '#2A78D6',
     children: [
-      { name: 'Auto', icon: 'car-sport', color: '#F0A43A', quickAmount: 5000 },
-      { name: 'Metro', icon: 'train', color: '#3FA7D6', quickAmount: 4000 },
-      { name: 'Cab', icon: 'car', color: '#E08E45' },
-      { name: 'Fuel', icon: 'speedometer', color: '#D9734E' },
+      { name: 'Auto', icon: 'car-sport', color: '#EB6834', quickAmount: 5000 },
+      { name: 'Metro', icon: 'train', color: '#2A78D6', quickAmount: 4000 },
+      { name: 'Cab', icon: 'car', color: '#6250D6' },
+      { name: 'Fuel', icon: 'speedometer', color: '#EDA100' },
     ],
   },
-  { name: 'Other', kind: 'expense', icon: 'ellipsis-horizontal', color: '#9AA0B5' },
-  { name: 'Salary', kind: 'income', icon: 'briefcase', color: '#2BB389' },
-  { name: 'Other Income', kind: 'income', icon: 'cash', color: '#58C9A0' },
-  { name: 'Mutual Funds', kind: 'investment', icon: 'trending-up', color: '#3D8BEB' },
+  { name: 'Other', kind: 'expense', icon: 'ellipsis-horizontal', color: '#8A8F98' },
+  { name: 'Salary', kind: 'income', icon: 'briefcase', color: '#1BAF7A' },
+  { name: 'Other Income', kind: 'income', icon: 'cash', color: '#008300' },
+  { name: 'Mutual Funds', kind: 'investment', icon: 'trending-up', color: '#2A78D6' },
 ];
 
 const DEFAULT_ACCOUNTS = [
-  { name: 'Bank (Salary)', type: 'bank', icon: 'business', color: '#5B50E6' },
-  { name: 'Cash', type: 'cash', icon: 'wallet', color: '#2BB389' },
-  { name: 'UPI', type: 'wallet', icon: 'phone-portrait', color: '#3D8BEB' },
+  { name: 'Bank (Salary)', type: 'bank', icon: 'business', color: '#0F766E' },
+  { name: 'Cash', type: 'cash', icon: 'wallet', color: '#13805B' },
+  { name: 'UPI', type: 'wallet', icon: 'phone-portrait', color: '#2A78D6' },
 ] as const;
 
 /**
@@ -98,5 +98,62 @@ export function seedIfNeeded(db: DB): void {
     }
 
     tx.insert(settings).values({ key: SEED_KEY, value: SEED_VERSION }).run();
+  });
+}
+
+const PALETTE_KEY = 'palette_version';
+const PALETTE_VERSION = '2';
+
+/** Old default colour -> new palette (only untouched defaults are changed). */
+const CATEGORY_RECOLOR: Record<string, [string, string]> = {
+  'Food & Dining': ['#F28B66', '#EB6834'],
+  Groceries: ['#6BBF59', '#1BAF7A'],
+  'Bills & Utilities': ['#F2B84B', '#EDA100'],
+  Rent: ['#8C7CF0', '#6250D6'],
+  Shopping: ['#E76FA6', '#E87BA4'],
+  Entertainment: ['#5DA9E9', '#E34948'],
+  Subscriptions: ['#9C89B8', '#64748B'],
+  Health: ['#4CC9A6', '#008300'],
+  Travel: ['#F0A43A', '#2A78D6'],
+  Auto: ['#F0A43A', '#EB6834'],
+  Metro: ['#3FA7D6', '#2A78D6'],
+  Cab: ['#E08E45', '#6250D6'],
+  Fuel: ['#D9734E', '#EDA100'],
+  Other: ['#9AA0B5', '#8A8F98'],
+  Salary: ['#2BB389', '#1BAF7A'],
+  'Other Income': ['#58C9A0', '#008300'],
+  'Mutual Funds': ['#3D8BEB', '#2A78D6'],
+};
+const ACCOUNT_RECOLOR: Record<string, string> = {
+  '#5B50E6': '#0F766E', // bank
+  '#2BB389': '#13805B', // cash
+  '#3D8BEB': '#2A78D6', // UPI / wallet
+  '#C2417F': '#A8395F', // credit card
+  '#3FA7D6': '#6250D6', // metro card
+  '#F0A43A': '#B26A12', // money owed to me
+};
+
+/** One-time recolour of default categories/accounts to the new palette. Idempotent. */
+export function upgradePalette(db: DB): void {
+  const done = db.select().from(settings).where(eq(settings.key, PALETTE_KEY)).all();
+  if (done.length > 0) return;
+  const now = Date.now();
+  db.transaction((tx) => {
+    for (const c of tx.select().from(categories).all()) {
+      const m = CATEGORY_RECOLOR[c.name];
+      if (m && c.color.toUpperCase() === m[0]) {
+        tx.update(categories)
+          .set({ color: m[1], updatedAt: now })
+          .where(eq(categories.id, c.id))
+          .run();
+      }
+    }
+    for (const a of tx.select().from(accounts).all()) {
+      const next = a.color ? ACCOUNT_RECOLOR[a.color.toUpperCase()] : undefined;
+      if (next) {
+        tx.update(accounts).set({ color: next, updatedAt: now }).where(eq(accounts.id, a.id)).run();
+      }
+    }
+    tx.insert(settings).values({ key: PALETTE_KEY, value: PALETTE_VERSION }).run();
   });
 }

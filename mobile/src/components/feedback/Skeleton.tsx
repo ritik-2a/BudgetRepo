@@ -23,10 +23,10 @@ export function Skeleton({
   style?: ViewStyle;
 }) {
   const t = useTheme();
-  const opacity = useSharedValue(0.45);
+  const opacity = useSharedValue(0.55);
 
   useEffect(() => {
-    opacity.value = withRepeat(withTiming(1, { duration: 750 }), -1, true);
+    opacity.value = withRepeat(withTiming(1, { duration: 900 }), -1, true);
   }, [opacity]);
 
   const animated = useAnimatedStyle(() => ({ opacity: opacity.value }));

@@ -122,17 +122,22 @@ function CardDetail({ card, spendable }: { card: AccountWithBalance; spendable: 
 
   return (
     <View style={styles.wrap}>
-      <ClayCard tint={card.color ?? t.colors.creditCard} style={styles.hero}>
-        <AppText variant="label" color="#FFFFFF" style={styles.dim}>
+      <ClayCard tint={t.colors.hero} style={styles.hero}>
+        <AppText variant="label" color={t.colors.onHeroMuted}>
           {card.name} · outstanding
         </AppText>
-        <AppText variant="display" color="#FFFFFF">
+        <AppText variant="display" color={t.colors.onHero}>
           {formatINR(outstanding)}
         </AppText>
         {util !== null ? (
           <>
-            <ProgressBar value={util} color="#FFFFFF" height={8} />
-            <AppText variant="caption" color="#FFFFFF" style={styles.dim}>
+            <ProgressBar
+              value={util}
+              color={util >= 0.8 ? t.colors.warning : t.colors.onHero}
+              trackColor={t.colors.heroTrack}
+              height={6}
+            />
+            <AppText variant="caption" color={t.colors.onHeroMuted}>
               {Math.round(util * 100)}% of {formatINR(card.creditLimit!)} limit used
             </AppText>
           </>

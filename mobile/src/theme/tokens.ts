@@ -1,78 +1,106 @@
 /**
- * Design tokens for the claymorphic UI.
+ * Design tokens.
  *
- * Clay look = soft pastel surfaces, large radii, a soft outer drop shadow plus an
- * inset highlight (top-left) and inset shade (bottom-right). Text colours are
- * chosen to keep WCAG-AA contrast (>= 4.5:1) against `surface` and `background`.
+ * Professional, calm finance look: warm neutral surfaces, one confident brand colour
+ * (deep teal), muted semantic colours, thin borders and at most one soft shadow per
+ * surface (cheap to render on Android, so scrolling and taps stay smooth).
+ * Text colours keep WCAG-AA contrast on `surface` and `background` in both themes.
  */
 
 export type ColorScheme = 'light' | 'dark';
 
 const light = {
-  background: '#E9ECF5',
-  surface: '#F4F6FC',
-  surfaceSunken: '#E1E5F0',
-  text: '#23263A',
-  textMuted: '#555A72',
-  border: '#D5DAE8',
-  primary: '#5B50E6',
+  background: '#F5F6F4',
+  surface: '#FFFFFF',
+  surfaceSunken: '#EFF1EE',
+  surfaceRaised: '#FFFFFF',
+  border: '#E2E5E1',
+  borderStrong: '#CBD1CC',
+  text: '#141A1F',
+  textMuted: '#5A6570',
+  primary: '#0F766E',
+  primarySoft: '#E3F2EF',
   onPrimary: '#FFFFFF',
-  // Semantic money colours (used on chips/bars; text-on-surface variants are darker)
-  expense: '#E0565B',
-  income: '#1F9D75',
-  investment: '#2F7BE0',
-  transfer: '#7A6FF0',
-  travel: '#C97A0E',
-  creditCard: '#C2417F',
-  warning: '#C97A0E',
-  danger: '#D13C43',
-  // Clay shadow parts
-  shadowDark: 'rgba(120, 130, 170, 0.35)',
-  highlight: 'rgba(255, 255, 255, 0.85)',
-  innerShade: 'rgba(120, 130, 170, 0.18)',
+  /** Headline cards (balances, outstanding) */
+  hero: '#0E3D38',
+  onHero: '#FFFFFF',
+  onHeroMuted: 'rgba(255,255,255,0.74)',
+  heroTrack: 'rgba(255,255,255,0.18)',
+  /** Snackbars / toasts */
+  inverse: '#1C2329',
+  onInverse: '#F2F5F3',
+  // Semantic money colours
+  expense: '#C8413B',
+  income: '#13805B',
+  investment: '#2A64C8',
+  transfer: '#5F6B78',
+  travel: '#B26A12',
+  creditCard: '#A8395F',
+  warning: '#B26A12',
+  danger: '#C62828',
+  ripple: 'rgba(15, 118, 110, 0.10)',
+  shadow: 'rgba(16, 24, 32, 0.07)',
 };
 
 const dark: typeof light = {
-  background: '#171925',
-  surface: '#222536',
-  surfaceSunken: '#1B1D2B',
-  text: '#ECEEF7',
-  textMuted: '#A9ADC4',
-  border: '#33374C',
-  primary: '#8B82FF',
-  onPrimary: '#14121F',
-  expense: '#FF8589',
-  income: '#4FD1A5',
-  investment: '#6AA8FF',
-  transfer: '#A79FFF',
-  travel: '#FFB547',
-  creditCard: '#F07AB4',
-  warning: '#FFB547',
-  danger: '#FF6B70',
-  shadowDark: 'rgba(0, 0, 0, 0.55)',
-  highlight: 'rgba(255, 255, 255, 0.07)',
-  innerShade: 'rgba(0, 0, 0, 0.35)',
+  background: '#0F1416',
+  surface: '#171D20',
+  surfaceSunken: '#12171A',
+  surfaceRaised: '#1D2428',
+  border: '#252D32',
+  borderStrong: '#34404A',
+  text: '#E8EDEB',
+  textMuted: '#9AA6AB',
+  primary: '#3CC3AA',
+  primarySoft: '#16302C',
+  onPrimary: '#06201C',
+  hero: '#123A35',
+  onHero: '#EAF7F4',
+  onHeroMuted: 'rgba(234,247,244,0.72)',
+  heroTrack: 'rgba(234,247,244,0.16)',
+  inverse: '#E8EDEB',
+  onInverse: '#141A1F',
+  expense: '#F0857E',
+  income: '#45C98F',
+  investment: '#78A6F5',
+  transfer: '#9AA6B4',
+  travel: '#E9A23B',
+  creditCard: '#E681A6',
+  warning: '#E9A23B',
+  danger: '#FF7A70',
+  ripple: 'rgba(60, 195, 170, 0.14)',
+  shadow: 'rgba(0, 0, 0, 0)',
 };
 
 export const palettes = { light, dark } as const;
 export type Palette = typeof light;
 
-export const radius = { sm: 12, md: 18, lg: 26, pill: 999 } as const;
+export const radius = { sm: 10, md: 12, lg: 16, pill: 999 } as const;
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
-export const fontSize = { xs: 12, sm: 14, md: 16, lg: 20, xl: 26, xxl: 34 } as const;
+export const fontSize = { xs: 12, sm: 14, md: 16, lg: 18, xl: 24, xxl: 30 } as const;
 
 /**
- * Builds a CSS-style `boxShadow` string (supported by React Native's New Architecture)
- * for raised or pressed clay surfaces.
+ * One soft outer shadow for raised surfaces in light mode; nothing in dark mode
+ * (borders separate surfaces there). 'pressed' / 'flat' draw no shadow.
  */
 export function clayShadow(p: Palette, variant: 'raised' | 'pressed' | 'flat' = 'raised'): string {
-  if (variant === 'flat') return 'none';
-  if (variant === 'pressed') {
-    return [`inset 4px 4px 8px ${p.innerShade}`, `inset -3px -3px 6px ${p.highlight}`].join(', ');
-  }
-  return [
-    `8px 10px 20px ${p.shadowDark}`,
-    `inset 3px 3px 6px ${p.highlight}`,
-    `inset -4px -4px 8px ${p.innerShade}`,
-  ].join(', ');
+  if (variant !== 'raised' || p.shadow === 'rgba(0, 0, 0, 0)') return 'none';
+  return `0px 1px 3px ${p.shadow}`;
 }
+
+/**
+ * Category / chart colours: the validated 8-hue categorical palette (fixed order),
+ * plus a neutral for "Other".
+ */
+export const CATEGORY_PALETTE = [
+  '#2A78D6', // blue
+  '#EB6834', // orange
+  '#1BAF7A', // aqua
+  '#EDA100', // yellow
+  '#E87BA4', // magenta
+  '#008300', // green
+  '#6250D6', // violet
+  '#E34948', // red
+  '#64748B', // slate
+  '#8A8F98', // grey
+] as const;

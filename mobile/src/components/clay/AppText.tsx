@@ -14,15 +14,29 @@ export type AppTextProps = TextProps & {
 export function AppText({ variant = 'body', muted, color, weight, style, ...rest }: AppTextProps) {
   const { colors, fontSize } = useTheme();
   const v = {
-    display: { fontSize: fontSize.xxl, fontWeight: '800' as const, letterSpacing: -0.5 },
-    title: { fontSize: fontSize.lg, fontWeight: '700' as const },
-    subtitle: { fontSize: fontSize.md, fontWeight: '600' as const },
-    body: { fontSize: fontSize.md, fontWeight: '400' as const },
-    caption: { fontSize: fontSize.sm, fontWeight: '400' as const },
+    display: {
+      fontSize: fontSize.xxl,
+      fontWeight: '700' as const,
+      letterSpacing: -0.6,
+      fontVariant: ['tabular-nums' as const],
+    },
+    title: {
+      fontSize: fontSize.lg,
+      fontWeight: '600' as const,
+      letterSpacing: -0.2,
+      fontVariant: ['tabular-nums' as const],
+    },
+    subtitle: {
+      fontSize: fontSize.md,
+      fontWeight: '600' as const,
+      fontVariant: ['tabular-nums' as const],
+    },
+    body: { fontSize: fontSize.md, fontWeight: '400' as const, lineHeight: 22 },
+    caption: { fontSize: fontSize.sm, fontWeight: '400' as const, lineHeight: 19 },
     label: {
       fontSize: fontSize.xs,
-      fontWeight: '700' as const,
-      letterSpacing: 0.6,
+      fontWeight: '600' as const,
+      letterSpacing: 0.5,
       textTransform: 'uppercase' as const,
     },
   }[variant];

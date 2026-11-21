@@ -188,7 +188,7 @@ export default function SettingsScreen() {
           onChange={(v) => setPref('themeMode', v)}
         />
         <AppText variant="caption" muted>
-          Night mode uses a dark clay theme that is easier on the eyes. System follows your phone.
+          Night uses a dark theme that is easier on the eyes at night. System follows your phone.
         </AppText>
       </ClayCard>
 

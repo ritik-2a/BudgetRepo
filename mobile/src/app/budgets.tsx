@@ -156,12 +156,10 @@ export default function BudgetsScreen() {
                     onPress={() => openEditor({ categoryId: c.id, name: c.name, current: null })}
                     accessibilityRole="button"
                     accessibilityLabel={`Set budget for ${c.name}`}
-                    style={({ pressed }) => [
+                    android_ripple={{ color: t.colors.ripple }}
+                    style={[
                       styles.tile,
-                      {
-                        backgroundColor: t.colors.surface,
-                        boxShadow: t.shadow(pressed ? 'pressed' : 'raised'),
-                      },
+                      { backgroundColor: t.colors.surface, borderColor: t.colors.border },
                     ]}
                   >
                     <IconBadge name={c.icon} color={c.color} size={32} />
@@ -208,7 +206,6 @@ export default function BudgetsScreen() {
                 placeholder="Monthly limit"
                 keyboardType="decimal-pad"
                 prefix="₹"
-                autoFocus
               />
               <View style={styles.buttons}>
                 {editing?.id ? (
@@ -235,7 +232,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   flex: { flex: 1 },
   backdrop: {

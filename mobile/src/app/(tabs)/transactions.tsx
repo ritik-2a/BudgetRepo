@@ -140,7 +140,7 @@ export default function HistoryScreen() {
         contentContainerStyle={{
           paddingTop: insets.top + 16,
           paddingHorizontal: 16,
-          paddingBottom: TAB_BAR_SPACE + insets.bottom,
+          paddingBottom: TAB_BAR_SPACE,
         }}
         ListHeaderComponent={header}
         ListEmptyComponent={

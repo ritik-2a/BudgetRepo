@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -12,8 +13,17 @@ export type ClayInputProps = TextInputProps & {
 };
 
 /** `ref` (React 19) is forwarded to the TextInput via `rest`. */
-export function ClayInput({ label, error, prefix, style, ...rest }: ClayInputProps) {
+export function ClayInput({
+  label,
+  error,
+  prefix,
+  style,
+  onFocus,
+  onBlur,
+  ...rest
+}: ClayInputProps) {
   const t = useTheme();
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.wrap}>
       {label ? (
@@ -25,10 +35,9 @@ export function ClayInput({ label, error, prefix, style, ...rest }: ClayInputPro
         style={[
           styles.field,
           {
-            backgroundColor: t.colors.surfaceSunken,
+            backgroundColor: t.colors.surface,
             borderRadius: t.radius.md,
-            boxShadow: t.shadow('pressed'),
-            borderColor: error ? t.colors.danger : 'transparent',
+            borderColor: error ? t.colors.danger : focused ? t.colors.primary : t.colors.border,
           },
         ]}
       >
@@ -39,7 +48,17 @@ export function ClayInput({ label, error, prefix, style, ...rest }: ClayInputPro
         ) : null}
         <TextInput
           placeholderTextColor={t.colors.textMuted}
+          selectionColor={t.colors.primary}
+          cursorColor={t.colors.primary}
           style={[styles.input, { color: t.colors.text, fontSize: t.fontSize.md }, style]}
+          onFocus={(e) => {
+            setFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
           {...rest}
         />
       </View>
@@ -58,9 +77,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
-    minHeight: 50,
-    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    minHeight: 48,
+    borderWidth: 1,
   },
-  input: { flex: 1, paddingVertical: 12 },
+  input: { flex: 1, paddingVertical: 10 },
 });

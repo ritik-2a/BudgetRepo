@@ -33,14 +33,14 @@ export function TravelDashboard() {
       <MonthSwitcher month={month} onChange={setMonth} />
       {spend.error ? <ErrorState title="Couldn't load travel" error={spend.error} /> : null}
 
-      <ClayCard tint={t.colors.travel} style={styles.hero}>
-        <AppText variant="label" color="#FFFFFF" style={styles.dim}>
+      <ClayCard tint={t.colors.hero} style={styles.hero}>
+        <AppText variant="label" color={t.colors.onHeroMuted}>
           Travel this month
         </AppText>
-        <AppText variant="display" color="#FFFFFF">
+        <AppText variant="display" color={t.colors.onHero}>
           {formatINR(total)}
         </AppText>
-        <AppText variant="caption" color="#FFFFFF" style={styles.dim}>
+        <AppText variant="caption" color={t.colors.onHeroMuted}>
           {trips} trip{trips === 1 ? '' : 's'} · about{' '}
           {formatINR(Math.round(total / Math.max(1, days)))} a day
         </AppText>
@@ -54,6 +54,7 @@ export function TravelDashboard() {
           <Skeleton height={120} />
         ) : spend.data.length === 0 ? (
           <EmptyState
+            bare
             icon="train"
             title="No travel logged"
             message="Use the Auto and Metro buttons to log rides in one tap."

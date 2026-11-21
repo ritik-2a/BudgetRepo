@@ -55,14 +55,14 @@ export default function HomeScreen() {
           <Skeleton width="50%" height={12} />
         </ClayCard>
       ) : (
-        <ClayCard tint={t.colors.primary} style={styles.hero}>
-          <AppText variant="label" color={t.colors.onPrimary} style={styles.dim}>
+        <ClayCard tint={t.colors.hero} style={styles.hero}>
+          <AppText variant="label" color={t.colors.onHeroMuted}>
             Left this month
           </AppText>
-          <AppText variant="display" color={t.colors.onPrimary}>
+          <AppText variant="display" color={t.colors.onHero}>
             {formatINR(remaining)}
           </AppText>
-          <AppText variant="caption" color={t.colors.onPrimary} style={styles.dim}>
+          <AppText variant="caption" color={t.colors.onHeroMuted}>
             {savingsRate === null
               ? 'Add your salary to see your savings rate'
               : `Savings rate ${savingsRate}% · after spending and investing`}
@@ -246,10 +246,8 @@ function Shortcut({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => [
-        styles.shortcut,
-        { backgroundColor: t.colors.surface, boxShadow: t.shadow(pressed ? 'pressed' : 'raised') },
-      ]}
+      android_ripple={{ color: t.colors.ripple }}
+      style={[styles.shortcut, { backgroundColor: t.colors.surface, borderColor: t.colors.border }]}
     >
       <IconBadge name={icon} color={color} size={38} />
       <AppText variant="caption" weight="600">
@@ -265,5 +263,13 @@ const styles = StyleSheet.create({
   tiles: { flexDirection: 'row', gap: 12 },
   tile: { flex: 1, gap: 6, padding: 14 },
   shortcuts: { flexDirection: 'row', gap: 10 },
-  shortcut: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: 18 },
+  shortcut: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
 });

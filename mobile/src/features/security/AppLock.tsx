@@ -88,7 +88,7 @@ export function AppLockGate({ children }: { children: ReactNode }) {
           style={[StyleSheet.absoluteFill, styles.lock, { backgroundColor: t.colors.background }]}
           accessibilityViewIsModal
         >
-          <View style={[styles.iconWrap, { boxShadow: t.shadow('raised') }]}>
+          <View style={styles.iconWrap}>
             <Image source={require('@/assets/images/logo.png')} style={styles.icon} />
             <View style={[styles.lockBadge, { backgroundColor: t.colors.surface }]}>
               <Ionicons name="lock-closed" size={18} color={t.colors.primary} />

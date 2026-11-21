@@ -257,7 +257,6 @@ export function TransactionForm({
             keyboardType="decimal-pad"
             accessibilityLabel="Amount in rupees"
             style={[styles.amountInput, { color: t.colors.text }]}
-            autoFocus={!editId && !initial?.amount}
           />
         </View>
         {errors.amount ? (
@@ -289,9 +288,8 @@ export function TransactionForm({
                   style={[
                     styles.catTile,
                     {
-                      backgroundColor: active ? parent.color + '26' : t.colors.surface,
-                      borderColor: active ? parent.color : 'transparent',
-                      boxShadow: t.shadow(active ? 'pressed' : 'raised'),
+                      backgroundColor: active ? t.colors.primarySoft : t.colors.surface,
+                      borderColor: active ? t.colors.primary : t.colors.border,
                     },
                   ]}
                 >
@@ -467,8 +465,8 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     paddingHorizontal: 4,
-    borderRadius: 18,
-    borderWidth: 1.5,
+    borderRadius: 14,
+    borderWidth: 1,
   },
   catLabel: { textAlign: 'center' },
 });

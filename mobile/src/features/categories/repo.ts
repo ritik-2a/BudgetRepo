@@ -4,6 +4,7 @@ import { db } from '@/db/client';
 import { categories, type Category, type CategoryKind } from '@/db/schema';
 import { useLiveData } from '@/db/useLiveData';
 import { newId } from '@/lib/id';
+import { CATEGORY_PALETTE } from '@/theme/tokens';
 
 export type CategoryInput = {
   name: string;
@@ -58,24 +59,8 @@ export const CATEGORY_ICONS = [
   'ellipsis-horizontal',
 ] as const;
 
-export const CATEGORY_COLORS = [
-  '#F28B66',
-  '#6BBF59',
-  '#F2B84B',
-  '#8C7CF0',
-  '#E76FA6',
-  '#5DA9E9',
-  '#9C89B8',
-  '#4CC9A6',
-  '#F0A43A',
-  '#3FA7D6',
-  '#E08E45',
-  '#D9734E',
-  '#2BB389',
-  '#3D8BEB',
-  '#C2417F',
-  '#9AA0B5',
-] as const;
+/** Picker colours: the validated categorical palette (see theme/tokens). */
+export const CATEGORY_COLORS = CATEGORY_PALETTE;
 
 export function useCategories(kind?: CategoryKind) {
   return useLiveData<Category>(

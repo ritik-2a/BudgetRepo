@@ -22,6 +22,17 @@ function useWidth(initial = 300) {
   return { width, onLayout };
 }
 
+function EmptyChart({ height }: { height: number }) {
+  const t = useTheme();
+  return (
+    <View style={[styles.emptyChart, { height, borderColor: t.colors.border }]}>
+      <AppText variant="caption" muted>
+        Nothing to chart yet. Data appears as you add transactions.
+      </AppText>
+    </View>
+  );
+}
+
 /** "Nice" axis maximum: 1, 2, 2.5, 5 × 10^n above the data max. */
 function niceMax(v: number): number {
   if (v <= 0) return 1;
@@ -65,6 +76,7 @@ export function BarChart({
   const ticks = [0, 0.5, 1];
 
   const active = selected ?? (highlightLast ? data.length - 1 : null);
+  if (data.every((d) => d.value === 0)) return <EmptyChart height={height} />;
 
   return (
     <View onLayout={onLayout} accessible accessibilityLabel={accessibilityLabel}>
@@ -328,6 +340,7 @@ export function LineChart({
   const line = data.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(d.value)}`).join(' ');
   const area = n ? `${line} L${x(n - 1)},${padTop + plotH} L${x(0)},${padTop + plotH} Z` : '';
   const active = selected ?? n - 1;
+  if (data.every((d) => d.value === 0)) return <EmptyChart height={height} />;
   const labelEvery = Math.ceil(n / 6);
 
   return (
@@ -471,6 +484,14 @@ export function HBarList({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  emptyChart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+  },
   hitRow: { flexDirection: 'row' },
   donutWrap: { alignItems: 'center', gap: 16 },
   donutCenter: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36 },

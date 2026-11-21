@@ -3,9 +3,10 @@ import { View, type ViewProps } from 'react-native';
 import { useTheme } from '@/theme';
 
 export type ClayCardProps = ViewProps & {
-  /** raised (default) pops out; sunken looks pressed in (e.g. inputs, progress tracks) */
+  /** raised (default) = white card with hairline border; sunken = recessed panel */
   variant?: 'raised' | 'sunken';
   padded?: boolean;
+  /** Solid background (e.g. hero cards); hides the border */
   tint?: string;
 };
 
@@ -24,7 +25,9 @@ export function ClayCard({
         {
           backgroundColor: tint ?? (sunken ? t.colors.surfaceSunken : t.colors.surface),
           borderRadius: t.radius.lg,
-          boxShadow: t.shadow(sunken ? 'pressed' : 'raised'),
+          borderWidth: tint || sunken ? 0 : 1,
+          borderColor: t.colors.border,
+          boxShadow: tint || sunken ? 'none' : t.shadow('raised'),
           padding: padded ? t.spacing.lg : 0,
         },
         style,

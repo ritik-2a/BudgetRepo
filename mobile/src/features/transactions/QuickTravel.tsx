@@ -72,13 +72,13 @@ export function QuickTravel() {
           accessibilityRole="button"
           accessibilityLabel={`Log ${c.name} ${formatINR(c.quickAmount!)}`}
           accessibilityHint="Long press to change the amount"
-          style={({ pressed }) => [
+          android_ripple={{ color: t.colors.ripple }}
+          style={[
             styles.btn,
             {
               backgroundColor: t.colors.surface,
-              borderRadius: t.radius.md,
-              boxShadow: t.shadow(pressed ? 'pressed' : 'raised'),
-              transform: [{ scale: pressed ? 0.97 : 1 }],
+              borderRadius: t.radius.lg,
+              borderColor: t.colors.border,
             },
           ]}
         >
@@ -97,5 +97,13 @@ export function QuickTravel() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12 },
-  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+  btn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
 });

@@ -42,10 +42,9 @@ function FieldButton({
         style={[
           styles.field,
           {
-            backgroundColor: t.colors.surfaceSunken,
+            backgroundColor: t.colors.surface,
             borderRadius: t.radius.md,
-            boxShadow: t.shadow('pressed'),
-            borderColor: error ? t.colors.danger : 'transparent',
+            borderColor: error ? t.colors.danger : t.colors.border,
           },
         ]}
       >
@@ -247,11 +246,12 @@ export function MonthSwitcher({
       accessibilityRole="button"
       accessibilityLabel={delta < 0 ? 'Previous month' : 'Next month'}
       hitSlop={8}
-      style={({ pressed }) => [
+      android_ripple={{ color: t.colors.ripple }}
+      style={[
         styles.monthBtn,
         {
           backgroundColor: t.colors.surface,
-          boxShadow: t.shadow(pressed ? 'pressed' : 'raised'),
+          borderColor: t.colors.border,
           opacity: disabled ? 0.35 : 1,
         },
       ]}
@@ -358,14 +358,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 16,
-    minHeight: 50,
-    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    minHeight: 48,
+    borderWidth: 1,
   },
   flex: { flex: 1 },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(10, 12, 25, 0.45)',
+    backgroundColor: 'rgba(8, 12, 14, 0.5)',
     justifyContent: 'center',
     padding: 20,
   },
@@ -375,7 +375,9 @@ const styles = StyleSheet.create({
   monthBtn: {
     width: 40,
     height: 40,
-    borderRadius: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

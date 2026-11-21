@@ -33,11 +33,7 @@ export function SegmentedControl<T extends string>({
       accessibilityRole="tablist"
       style={[
         styles.segment,
-        {
-          backgroundColor: t.colors.surfaceSunken,
-          borderRadius: t.radius.md,
-          boxShadow: t.shadow('pressed'),
-        },
+        { backgroundColor: t.colors.surfaceSunken, borderRadius: t.radius.md },
       ]}
     >
       {options.map((o) => {
@@ -49,21 +45,24 @@ export function SegmentedControl<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => {
+              if (active) return;
               tap();
               onChange(o.value);
             }}
             style={[
               styles.segmentItem,
+              { borderRadius: t.radius.sm },
               active && {
                 backgroundColor: t.colors.surface,
-                borderRadius: t.radius.sm,
                 boxShadow: t.shadow('raised'),
+                borderWidth: t.scheme === 'dark' ? 1 : 0,
+                borderColor: t.colors.border,
               },
             ]}
           >
             <AppText
               variant="caption"
-              weight={active ? '700' : '500'}
+              weight={active ? '600' : '500'}
               color={active ? activeColor : t.colors.textMuted}
               numberOfLines={1}
             >
@@ -101,14 +100,14 @@ export function Chip({
         tap();
         onPress?.();
       }}
+      android_ripple={{ color: t.colors.ripple, borderless: false }}
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
-      style={({ pressed }) => [
+      style={[
         styles.chip,
         {
-          backgroundColor: selected ? c + (t.scheme === 'dark' ? '40' : '22') : t.colors.surface,
-          borderColor: selected ? c : 'transparent',
-          boxShadow: t.shadow(pressed || selected ? 'pressed' : 'raised'),
+          backgroundColor: selected ? t.colors.primarySoft : t.colors.surface,
+          borderColor: selected ? t.colors.primary : t.colors.border,
         },
       ]}
     >
@@ -116,13 +115,13 @@ export function Chip({
         <Ionicons
           name={icon as keyof typeof Ionicons.glyphMap}
           size={16}
-          color={selected ? c : t.colors.textMuted}
+          color={selected ? t.colors.primary : c === t.colors.primary ? t.colors.textMuted : c}
         />
       ) : null}
       <AppText
         variant="caption"
-        weight={selected ? '700' : '500'}
-        color={selected ? t.colors.text : t.colors.textMuted}
+        weight={selected ? '600' : '500'}
+        color={selected ? t.colors.primary : t.colors.text}
       >
         {label}
       </AppText>
@@ -173,9 +172,9 @@ export function ListRow({
   const t = useTheme();
   const content = (
     <View style={[styles.row, muted && { opacity: 0.55 }]}>
-      {icon ? <IconBadge name={icon} color={iconColor ?? t.colors.primary} size={40} /> : null}
+      {icon ? <IconBadge name={icon} color={iconColor ?? t.colors.primary} size={38} /> : null}
       <View style={styles.rowText}>
-        <AppText variant="subtitle" numberOfLines={1}>
+        <AppText variant="subtitle" weight="500" numberOfLines={1}>
           {title}
         </AppText>
         {subtitle ? (
@@ -207,15 +206,16 @@ export function ListRow({
   return (
     <Pressable
       onPress={onPress}
+      android_ripple={{ color: t.colors.ripple }}
       accessibilityRole="button"
-      style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+      style={({ pressed }) => [styles.pressRow, pressed && { opacity: 0.85 }]}
     >
       {content}
     </Pressable>
   );
 }
 
-/** A card holding ListRows with consistent spacing. */
+/** A card holding ListRows separated by hairlines. */
 export function ListCard({ children }: { children: ReactNode }) {
   return <ClayCard style={styles.listCard}>{children}</ClayCard>;
 }
@@ -241,7 +241,7 @@ export function SectionTitle({
       </AppText>
       {action && onAction ? (
         <Pressable onPress={onAction} hitSlop={10} accessibilityRole="button">
-          <AppText variant="caption" weight="700" color={t.colors.primary}>
+          <AppText variant="caption" weight="600" color={t.colors.primary}>
             {action}
           </AppText>
         </Pressable>
@@ -257,12 +257,14 @@ export function SectionTitle({
 export function ProgressBar({
   value,
   color,
-  height = 12,
+  height = 8,
+  trackColor,
 }: {
   /** 0–1 (values above 1 are shown full) */
   value: number;
   color?: string;
   height?: number;
+  trackColor?: string;
 }) {
   const t = useTheme();
   const pct = Math.max(0, Math.min(1, value));
@@ -273,8 +275,7 @@ export function ProgressBar({
       style={{
         height,
         borderRadius: height,
-        backgroundColor: t.colors.surfaceSunken,
-        boxShadow: t.shadow('pressed'),
+        backgroundColor: trackColor ?? t.colors.surfaceSunken,
         overflow: 'hidden',
       }}
     >
@@ -320,9 +321,11 @@ export function SwitchRow({
   const t = useTheme();
   return (
     <View style={[styles.row, disabled && { opacity: 0.5 }]}>
-      {icon ? <IconBadge name={icon} color={t.colors.primary} size={40} /> : null}
+      {icon ? <IconBadge name={icon} color={t.colors.primary} size={38} /> : null}
       <View style={styles.rowText}>
-        <AppText variant="subtitle">{title}</AppText>
+        <AppText variant="subtitle" weight="500">
+          {title}
+        </AppText>
         {subtitle ? (
           <AppText variant="caption" muted>
             {subtitle}
@@ -333,7 +336,7 @@ export function SwitchRow({
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        trackColor={{ true: t.colors.primary, false: t.colors.border }}
+        trackColor={{ true: t.colors.primary, false: t.colors.borderStrong }}
         thumbColor="#FFFFFF"
         accessibilityLabel={title}
       />
@@ -342,7 +345,7 @@ export function SwitchRow({
 }
 
 /* ------------------------------------------------------------------ */
-/* FAB-style small icon button                                         */
+/* Small square icon button                                            */
 /* ------------------------------------------------------------------ */
 
 export function IconButton({
@@ -363,12 +366,13 @@ export function IconButton({
         tap();
         onPress();
       }}
+      android_ripple={{ color: t.colors.ripple }}
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={6}
-      style={({ pressed }) => [
+      style={[
         styles.iconButton,
-        { backgroundColor: t.colors.surface, boxShadow: t.shadow(pressed ? 'pressed' : 'raised') },
+        { backgroundColor: t.colors.surface, borderColor: t.colors.border },
       ]}
     >
       <Ionicons name={icon} size={22} color={color ?? t.colors.primary} />
@@ -377,33 +381,38 @@ export function IconButton({
 }
 
 const styles = StyleSheet.create({
-  segment: { flexDirection: 'row', padding: 4, gap: 4 },
-  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 4 },
+  segment: { flexDirection: 'row', padding: 3, gap: 2 },
+  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 9, paddingHorizontal: 4 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
-  chipRow: { gap: 10, paddingVertical: 6, paddingHorizontal: 2 },
+  chipRow: { gap: 8, paddingVertical: 2, paddingHorizontal: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  pressRow: { marginHorizontal: -8, paddingHorizontal: 8, borderRadius: 10, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },
   rowRight: { alignItems: 'flex-end', gap: 2, maxWidth: '45%' },
-  listCard: { gap: 16 },
+  listCard: { gap: 14 },
   sectionTitle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: -6,
+    marginTop: 4,
   },
   iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
 });

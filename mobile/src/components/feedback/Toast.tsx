@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeInUp, FadeOutUp, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/clay';
@@ -40,41 +40,41 @@ type ToastApi = {
 };
 
 const ToastContext = createContext<ToastApi | null>(null);
-const MAX_VISIBLE = 3;
+/** Space kept above the docked tab bar. */
+const BOTTOM_OFFSET = 76;
 
+/**
+ * Snackbar-style messages: one at a time, fading in just above the tab bar.
+ * A new message replaces the current one (no stacking or sliding).
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [toast, setToast] = useState<ToastItem | null>(null);
   const nextId = useRef(1);
-  const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dismiss = useCallback((id: number) => {
-    const timer = timers.current.get(id);
-    if (timer) clearTimeout(timer);
-    timers.current.delete(id);
-    setToasts((list) => list.filter((t) => t.id !== id));
+    setToast((cur) => (cur && cur.id === id ? null : cur));
   }, []);
 
   const show = useCallback(
     (tone: Tone, opts: ToastOptions) => {
       const id = nextId.current++;
-      setToasts((list) => [...list, { ...opts, id, tone }].slice(-MAX_VISIBLE));
+      if (timer.current) clearTimeout(timer.current);
+      setToast({ ...opts, id, tone });
 
-      const feedback =
-        tone === 'success'
-          ? Haptics.NotificationFeedbackType.Success
-          : tone === 'error'
+      if (tone === 'error' || tone === 'warning') {
+        Haptics.notificationAsync(
+          tone === 'error'
             ? Haptics.NotificationFeedbackType.Error
-            : Haptics.NotificationFeedbackType.Warning;
-      Haptics.notificationAsync(feedback).catch(() => {});
+            : Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
       AccessibilityInfo.announceForAccessibility(
         [opts.title, opts.message].filter(Boolean).join('. '),
       );
 
-      const duration = opts.duration ?? (tone === 'error' ? 6000 : 3500);
-      timers.current.set(
-        id,
-        setTimeout(() => dismiss(id), duration),
-      );
+      const duration = opts.duration ?? (opts.action ? 5000 : tone === 'error' ? 5000 : 2800);
+      timer.current = setTimeout(() => dismiss(id), duration);
     },
     [dismiss],
   );
@@ -94,7 +94,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <ToastViewport toasts={toasts} onDismiss={dismiss} />
+      <ToastViewport toast={toast} onDismiss={dismiss} />
     </ToastContext.Provider>
   );
 }
@@ -106,18 +106,21 @@ export function useToast(): ToastApi {
 }
 
 function ToastViewport({
-  toasts,
+  toast,
   onDismiss,
 }: {
-  toasts: ToastItem[];
+  toast: ToastItem | null;
   onDismiss: (id: number) => void;
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View pointerEvents="box-none" style={[styles.viewport, { top: insets.top + 8 }]}>
-      {toasts.map((toast) => (
+    <View
+      pointerEvents="box-none"
+      style={[styles.viewport, { bottom: insets.bottom + BOTTOM_OFFSET }]}
+    >
+      {toast ? (
         <ToastCard key={toast.id} toast={toast} onDismiss={() => onDismiss(toast.id)} />
-      ))}
+      ) : null}
     </View>
   );
 }
@@ -125,32 +128,29 @@ function ToastViewport({
 function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const t = useTheme();
   const { color, icon } = useToneColors(toast.tone);
+  // On the dark snackbar use the lighter (dark-theme) tone colours for contrast.
+  const iconColor = t.scheme === 'dark' ? color : lightenForInverse(toast.tone);
 
   return (
-    <Animated.View
-      entering={FadeInUp.springify().damping(18)}
-      exiting={FadeOutUp.duration(200)}
-      layout={LinearTransition}
-    >
+    <Animated.View entering={FadeIn.duration(140)} exiting={FadeOut.duration(120)}>
       <Pressable
         onPress={onDismiss}
         accessibilityRole={toast.tone === 'error' ? 'alert' : 'button'}
         accessibilityHint="Tap to dismiss"
-        style={[
-          styles.card,
-          {
-            backgroundColor: t.colors.surface,
-            borderRadius: t.radius.md,
-            boxShadow: t.shadow('raised'),
-            borderLeftColor: color,
-          },
-        ]}
+        style={[styles.card, { backgroundColor: t.colors.inverse, borderRadius: t.radius.md }]}
       >
-        <Ionicons name={icon} size={24} color={color} />
+        <Ionicons name={icon} size={20} color={iconColor} />
         <View style={styles.text}>
-          <AppText variant="subtitle">{toast.title}</AppText>
+          <AppText variant="subtitle" weight="600" color={t.colors.onInverse}>
+            {toast.title}
+          </AppText>
           {toast.message ? (
-            <AppText variant="caption" muted numberOfLines={4}>
+            <AppText
+              variant="caption"
+              color={t.colors.onInverse}
+              style={styles.dim}
+              numberOfLines={3}
+            >
               {toast.message}
             </AppText>
           ) : null}
@@ -161,30 +161,45 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
               toast.action?.onPress();
               onDismiss();
             }}
-            hitSlop={8}
+            hitSlop={10}
             accessibilityRole="button"
           >
-            <AppText variant="subtitle" color={t.colors.primary}>
-              {toast.action.label}
+            <AppText
+              variant="subtitle"
+              weight="600"
+              color={t.scheme === 'dark' ? t.colors.primary : '#5EDBC2'}
+            >
+              {toast.action.label.toUpperCase()}
             </AppText>
           </Pressable>
-        ) : (
-          <Ionicons name="close" size={18} color={t.colors.textMuted} />
-        )}
+        ) : null}
       </Pressable>
     </Animated.View>
   );
 }
 
+function lightenForInverse(tone: Tone): string {
+  switch (tone) {
+    case 'success':
+      return '#45C98F';
+    case 'error':
+      return '#FF8A80';
+    case 'warning':
+      return '#F2B04B';
+    default:
+      return '#8FD3C5';
+  }
+}
+
 const styles = StyleSheet.create({
-  viewport: { position: 'absolute', left: 12, right: 12, gap: 8, zIndex: 1000, elevation: 1000 },
+  viewport: { position: 'absolute', left: 12, right: 12, zIndex: 1000, elevation: 12 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderLeftWidth: 5,
   },
-  text: { flex: 1, gap: 2 },
+  text: { flex: 1, gap: 1 },
+  dim: { opacity: 0.8 },
 });

@@ -21,12 +21,12 @@ export const ACCOUNT_TYPE_META: Record<
   AccountType,
   { label: string; icon: string; color: string }
 > = {
-  bank: { label: 'Bank account', icon: 'business', color: '#5B50E6' },
-  credit_card: { label: 'Credit card', icon: 'card', color: '#C2417F' },
-  cash: { label: 'Cash', icon: 'wallet', color: '#2BB389' },
-  wallet: { label: 'Wallet / UPI', icon: 'phone-portrait', color: '#3D8BEB' },
-  metro_card: { label: 'Metro card', icon: 'train', color: '#3FA7D6' },
-  receivable: { label: 'Money owed to me', icon: 'people', color: '#F0A43A' },
+  bank: { label: 'Bank account', icon: 'business', color: '#0F766E' },
+  credit_card: { label: 'Credit card', icon: 'card', color: '#A8395F' },
+  cash: { label: 'Cash', icon: 'wallet', color: '#13805B' },
+  wallet: { label: 'Wallet / UPI', icon: 'phone-portrait', color: '#2A78D6' },
+  metro_card: { label: 'Metro card', icon: 'train', color: '#6250D6' },
+  receivable: { label: 'Money owed to me', icon: 'people', color: '#B26A12' },
 };
 
 export function validateAccount(a: AccountInput): Partial<Record<keyof AccountInput, string>> {

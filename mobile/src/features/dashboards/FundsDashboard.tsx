@@ -53,14 +53,14 @@ export function FundsDashboard() {
 
   return (
     <View style={styles.wrap}>
-      <ClayCard tint={t.colors.investment} style={styles.hero}>
-        <AppText variant="label" color="#FFFFFF" style={styles.dim}>
+      <ClayCard tint={t.colors.hero} style={styles.hero}>
+        <AppText variant="label" color={t.colors.onHeroMuted}>
           Total invested
         </AppText>
-        <AppText variant="display" color="#FFFFFF">
+        <AppText variant="display" color={t.colors.onHero}>
           {formatINR(totalInvested)}
         </AppText>
-        <AppText variant="caption" color="#FFFFFF" style={styles.dim}>
+        <AppText variant="caption" color={t.colors.onHeroMuted}>
           {formatINR(thisMonth)} this month
           {sipPlanned ? ` · SIPs planned ${formatINR(sipPlanned)}/month` : ''}
         </AppText>

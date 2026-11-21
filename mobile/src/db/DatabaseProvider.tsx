@@ -5,7 +5,7 @@ import { FullScreenError, FullScreenLoader } from '@/components/feedback';
 
 import migrations from '../../drizzle/migrations';
 import { db } from './client';
-import { seedIfNeeded } from './seed';
+import { seedIfNeeded, upgradePalette } from './seed';
 
 /** Runs pending migrations and first-run seeding before rendering the app. */
 export function DatabaseProvider({ children }: { children: ReactNode }) {
@@ -16,6 +16,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     if (!success) return null;
     try {
       seedIfNeeded(db);
+      upgradePalette(db);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e : new Error(String(e));

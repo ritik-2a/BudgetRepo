@@ -72,6 +72,7 @@ export function OverviewDashboard() {
           <Skeleton height={190} />
         ) : byCat.data.length === 0 ? (
           <EmptyState
+            bare
             icon="pie-chart"
             title="No spending this month"
             message="Add expenses to see the category breakdown."

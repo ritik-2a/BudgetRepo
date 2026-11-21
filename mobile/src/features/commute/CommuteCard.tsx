@@ -160,8 +160,11 @@ export function CommuteCard() {
                 styles.day,
                 {
                   backgroundColor: bg,
-                  borderColor: isToday ? t.colors.primary : 'transparent',
-                  boxShadow: t.shadow(state === 'planned' ? 'raised' : 'pressed'),
+                  borderColor: isToday
+                    ? t.colors.primary
+                    : state === 'planned'
+                      ? t.colors.border
+                      : 'transparent',
                 },
               ]}
             >
@@ -227,7 +230,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
     paddingVertical: 8,
-    borderRadius: 14,
-    borderWidth: 2,
+    borderRadius: 12,
+    borderWidth: 1.5,
   },
 });

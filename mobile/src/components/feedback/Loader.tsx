@@ -1,13 +1,4 @@
-import { useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 
 import { AppText } from '@/components/clay';
 import { useTheme } from '@/theme';
@@ -24,19 +15,6 @@ export function FullScreenLoader({
   hint?: string;
 }) {
   const t = useTheme();
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.08, { duration: 700, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 700, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1,
-    );
-  }, [scale]);
-
-  const logoStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   return (
     <View
@@ -45,13 +23,11 @@ export function FullScreenLoader({
       accessibilityLabel={message}
       accessibilityLiveRegion="polite"
     >
-      <Animated.View style={[styles.logo, { boxShadow: t.shadow('raised') }, logoStyle]}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logoImage}
-          accessibilityIgnoresInvertColors
-        />
-      </Animated.View>
+      <Image
+        source={require('@/assets/images/logo.png')}
+        style={styles.logoImage}
+        accessibilityIgnoresInvertColors
+      />
       <AppText variant="title" style={styles.brand}>
         Clayfin
       </AppText>
@@ -81,8 +57,7 @@ export function InlineLoader({ message = 'Loading…' }: { message?: string }) {
 
 const styles = StyleSheet.create({
   full: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8 },
-  logo: { width: 96, height: 96, borderRadius: 24 },
-  logoImage: { width: 96, height: 96, borderRadius: 24 },
+  logoImage: { width: 80, height: 80, borderRadius: 20 },
   brand: { marginTop: 16 },
   spinner: { marginTop: 24, marginBottom: 8 },
   center: { textAlign: 'center', maxWidth: 280 },

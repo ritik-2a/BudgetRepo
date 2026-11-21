@@ -18,7 +18,7 @@ import { AppText } from './AppText';
 import { StatusBarScrim } from './StatusBarScrim';
 
 /** Height reserved at the bottom so content isn't hidden behind the floating tab bar. */
-export const TAB_BAR_SPACE = 110;
+export const TAB_BAR_SPACE = 24;
 
 export type ScreenProps = {
   title?: string;
@@ -58,12 +58,10 @@ export function Screen({
             accessibilityRole="button"
             accessibilityLabel="Go back"
             hitSlop={8}
-            style={({ pressed }) => [
+            android_ripple={{ color: t.colors.ripple }}
+            style={[
               styles.back,
-              {
-                backgroundColor: t.colors.surface,
-                boxShadow: t.shadow(pressed ? 'pressed' : 'raised'),
-              },
+              { backgroundColor: t.colors.surface, borderColor: t.colors.border },
             ]}
           >
             <Ionicons name="chevron-back" size={22} color={t.colors.text} />
@@ -89,7 +87,8 @@ export function Screen({
       </View>
     ) : null;
 
-  const bottomPad = (inTabs ? TAB_BAR_SPACE : t.spacing.xl) + insets.bottom;
+  // Tab screens sit above the docked tab bar, which already handles the bottom inset.
+  const bottomPad = inTabs ? TAB_BAR_SPACE : t.spacing.xl + insets.bottom;
   const contentStyle = {
     paddingTop: insets.top + t.spacing.lg,
     paddingHorizontal: t.spacing.lg,
@@ -124,7 +123,7 @@ export function Screen({
           style={[
             styles.footer,
             {
-              paddingBottom: (inTabs ? TAB_BAR_SPACE : t.spacing.md) + insets.bottom,
+              paddingBottom: inTabs ? t.spacing.md : t.spacing.md + insets.bottom,
               backgroundColor: t.colors.background,
             },
           ]}
@@ -140,6 +139,13 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerText: { gap: 2, flex: 1 },
-  back: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  back: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   footer: { paddingHorizontal: 16, paddingTop: 8 },
 });

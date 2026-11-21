@@ -11,16 +11,20 @@ export function EmptyState({
   title,
   message,
   action,
+  bare,
 }: {
   icon?: string;
   title: string;
   message?: string;
   action?: Action;
+  /** Render without a card (use when already inside one). */
+  bare?: boolean;
 }) {
   const t = useTheme();
+  const Wrapper = bare ? View : ClayCard;
   return (
-    <ClayCard style={styles.card}>
-      <IconBadge name={icon} color={t.colors.primary} size={56} />
+    <Wrapper style={bare ? styles.bare : styles.card}>
+      <IconBadge name={icon} color={t.colors.primary} size={48} />
       <AppText variant="subtitle" style={styles.center}>
         {title}
       </AppText>
@@ -37,7 +41,7 @@ export function EmptyState({
           style={styles.action}
         />
       ) : null}
-    </ClayCard>
+    </Wrapper>
   );
 }
 
@@ -65,12 +69,7 @@ export function ErrorState({
         {message ?? 'Please try again. If it keeps happening, restart the app.'}
       </AppText>
       {details ? (
-        <View
-          style={[
-            styles.details,
-            { backgroundColor: t.colors.surfaceSunken, boxShadow: t.shadow('pressed') },
-          ]}
-        >
+        <View style={[styles.details, { backgroundColor: t.colors.surfaceSunken }]}>
           <AppText variant="caption" color={t.colors.danger} selectable>
             {details}
           </AppText>
@@ -110,6 +109,7 @@ export function errorMessage(error: unknown): string | null {
 
 const styles = StyleSheet.create({
   card: { alignItems: 'center', gap: 10, paddingVertical: 28 },
+  bare: { alignItems: 'center', gap: 10, paddingVertical: 16 },
   center: { textAlign: 'center', maxWidth: 300 },
   action: { alignSelf: 'center', marginTop: 6 },
   details: { alignSelf: 'stretch', padding: 12, borderRadius: 12 },

@@ -6,7 +6,7 @@ import { useTheme } from '@/theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
-/** Small rounded clay "blob" holding an icon, tinted with a category/account colour. */
+/** Rounded square holding an icon on a soft tint of its colour. */
 export function IconBadge({
   name,
   color,
@@ -22,16 +22,15 @@ export function IconBadge({
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.38,
-        backgroundColor: color + (t.scheme === 'dark' ? '33' : '26'),
+        borderRadius: Math.round(size * 0.3),
+        backgroundColor: color + (t.scheme === 'dark' ? '2E' : '1A'),
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: `inset 2px 2px 4px ${t.colors.highlight}, inset -2px -2px 4px ${t.colors.innerShade}`,
       }}
     >
       <Ionicons
         name={(name in Ionicons.glyphMap ? name : 'pricetag') as IconName}
-        size={size * 0.5}
+        size={Math.round(size * 0.5)}
         color={color}
       />
     </View>

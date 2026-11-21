@@ -95,6 +95,12 @@ export default function SettingsScreen() {
           onPress={() => router.push('/accounts')}
         />
         <ListRow
+          icon="people"
+          title="Friends & splits"
+          subtitle="Who owes you, who you owe, settle up"
+          onPress={() => router.push('/people')}
+        />
+        <ListRow
           icon="pricetags"
           title="Categories"
           subtitle="Edit categories and quick-add fares"

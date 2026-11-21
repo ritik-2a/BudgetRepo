@@ -9,6 +9,7 @@ import { useCardActivity } from '@/features/analytics/queries';
 import { useBudgetStatus } from '@/features/budgets/repo';
 import { CommuteCard } from '@/features/commute/CommuteCard';
 import { DueReminders } from '@/features/recurring/DueReminders';
+import { PeopleSummary } from '@/features/split/PeopleSummary';
 import { QuickTravel } from '@/features/transactions/QuickTravel';
 import { totalsQuery, useTransactions } from '@/features/transactions/repo';
 import { TxListItem } from '@/features/transactions/TxListItem';
@@ -83,6 +84,7 @@ export default function HomeScreen() {
 
       {/* Due items (salary etc.) and alerts */}
       <DueReminders />
+      <PeopleSummary />
       {cards.map((c) => (
         <CardDueAlert key={c.id} card={c} />
       ))}

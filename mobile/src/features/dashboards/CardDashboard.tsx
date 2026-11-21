@@ -195,8 +195,16 @@ function CardDetail({ card, spendable }: { card: AccountWithBalance; spendable: 
       <ClayCard style={styles.gap}>
         <View style={styles.row}>
           <AppText variant="subtitle">Current cycle</AppText>
-          <AppText variant="subtitle">{formatINR(a?.currentSpend ?? 0)}</AppText>
+          <AppText variant="subtitle">
+            {formatINR((a?.currentSpend ?? 0) + (a?.currentForFriends ?? 0))}
+          </AppText>
         </View>
+        {a?.currentForFriends ? (
+          <View style={styles.cols}>
+            <Mini label="Your spends" value={a.currentSpend} />
+            <Mini label="Paid for friends" value={a.currentForFriends} color={t.colors.primary} />
+          </View>
+        ) : null}
         <AppText variant="caption" muted>
           {formatDate(cycle.currentStart)} – {formatDate(cycle.currentEnd)} · goes on the bill due{' '}
           {formatDate(cycle.nextDueDate)}

@@ -23,6 +23,7 @@ export type TransactionInput = {
   date: string;
   note?: string | null;
   recurringRuleId?: string | null;
+  splitGroup?: string | null;
 };
 
 /** Normalises fields that don't apply to the chosen type. */
@@ -66,6 +67,29 @@ export function restoreTransaction(id: string): void {
     .run();
 }
 
+/** All parts of a split bill. */
+export function getSplitParts(group: string): Transaction[] {
+  return db
+    .select()
+    .from(transactions)
+    .where(and(eq(transactions.splitGroup, group), eq(transactions.deleted, false)))
+    .all();
+}
+
+export function deleteSplitGroup(group: string): void {
+  db.update(transactions)
+    .set({ deleted: true, updatedAt: Date.now() })
+    .where(eq(transactions.splitGroup, group))
+    .run();
+}
+
+export function restoreSplitGroup(group: string): void {
+  db.update(transactions)
+    .set({ deleted: false, updatedAt: Date.now() })
+    .where(eq(transactions.splitGroup, group))
+    .run();
+}
+
 export function getTransaction(id: string): Transaction | undefined {
   return db
     .select()
@@ -96,6 +120,8 @@ export type TxRow = {
   parentCategoryName: string | null;
   fundId: string | null;
   fundName: string | null;
+  toAccountType: string | null;
+  splitGroup: string | null;
   createdAt: number;
 };
 
@@ -117,6 +143,8 @@ const rowSelection = {
   parentCategoryName: parentCategory.name,
   fundId: transactions.fundId,
   fundName: funds.name,
+  toAccountType: toAccount.type,
+  splitGroup: transactions.splitGroup,
   createdAt: transactions.createdAt,
 };
 
@@ -192,6 +220,7 @@ export function listTransactions(f: TxFilter): TxRow[] {
 /** Display title for a transaction row. */
 export function txTitle(t: TxRow): string {
   if (t.type === 'transfer') {
+    if (t.toAccountType === 'receivable') return `Paid for ${t.toAccountName}`;
     return t.toAccountName ? `${t.accountName ?? 'Account'} → ${t.toAccountName}` : 'Transfer';
   }
   if (t.type === 'investment') return t.fundName ?? t.categoryName ?? 'Investment';

@@ -28,7 +28,7 @@ export default function AccountsScreen() {
   const { data, loading, error } = useAccountBalances(showArchived);
 
   const cards = data.filter((a) => a.type === 'credit_card');
-  const others = data.filter((a) => a.type !== 'credit_card');
+  const others = data.filter((a) => a.type !== 'credit_card' && a.type !== 'receivable');
   const assets = others.filter((a) => !a.archived).reduce((s, a) => s + a.balance, 0);
   const owed = cards.filter((a) => !a.archived).reduce((s, a) => s + Math.max(0, a.outstanding), 0);
 

@@ -26,7 +26,7 @@ export const ACCOUNT_TYPE_META: Record<
   cash: { label: 'Cash', icon: 'wallet', color: '#13805B' },
   wallet: { label: 'Wallet / UPI', icon: 'phone-portrait', color: '#2A78D6' },
   metro_card: { label: 'Metro card', icon: 'train', color: '#6250D6' },
-  receivable: { label: 'Money owed to me', icon: 'people', color: '#B26A12' },
+  receivable: { label: 'Friend (IOU)', icon: 'person', color: '#B26A12' },
 };
 
 export function validateAccount(a: AccountInput): Partial<Record<keyof AccountInput, string>> {
@@ -217,4 +217,14 @@ export function computeBalances(
     const balance = a.openingBalance + inflow - outflow;
     return { ...a, balance, outstanding: 0 };
   });
+}
+
+/** Friends you share bills with (IOU accounts) with what they owe you (+) or you owe them (−). */
+export function usePeople() {
+  const q = useAccountBalances();
+  return { ...q, data: q.data.filter((a) => a.type === 'receivable') };
+}
+
+export function createPerson(name: string): string {
+  return createAccount({ name: name.trim(), type: 'receivable', openingBalance: 0 });
 }

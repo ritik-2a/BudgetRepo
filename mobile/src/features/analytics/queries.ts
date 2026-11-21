@@ -177,6 +177,7 @@ export function useCardActivity(cardId: string, lastEnd: string) {
     creditsToStatement: number;
     paidAfterStatement: number;
     currentSpend: number;
+    currentForFriends: number;
   }>(
     db
       .select({
@@ -184,6 +185,7 @@ export function useCardActivity(cardId: string, lastEnd: string) {
         creditsToStatement: sql<number>`coalesce(sum(case when ((${transactions.toAccountId} = ${cardId} and ${transactions.type} = 'transfer') or (${transactions.accountId} = ${cardId} and ${transactions.type} = 'income')) and ${transactions.date} <= ${lastEnd} then ${transactions.amount} end), 0)`,
         paidAfterStatement: sql<number>`coalesce(sum(case when ((${transactions.toAccountId} = ${cardId} and ${transactions.type} = 'transfer') or (${transactions.accountId} = ${cardId} and ${transactions.type} = 'income')) and ${transactions.date} > ${lastEnd} then ${transactions.amount} end), 0)`,
         currentSpend: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} = 'expense' and ${transactions.date} > ${lastEnd} then ${transactions.amount} end), 0)`,
+        currentForFriends: sql<number>`coalesce(sum(case when ${transactions.accountId} = ${cardId} and ${transactions.type} = 'transfer' and ${transactions.date} > ${lastEnd} and ${transactions.toAccountId} in (select id from accounts where type = 'receivable') then ${transactions.amount} end), 0)`,
       })
       .from(transactions)
       .where(eq(transactions.deleted, false)),

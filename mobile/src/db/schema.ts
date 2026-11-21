@@ -86,6 +86,8 @@ export const transactions = sqliteTable(
     date: text('date').notNull(),
     note: text('note'),
     recurringRuleId: text('recurring_rule_id'),
+    /** Links the parts of one split bill (my share + friends' shares). */
+    splitGroup: text('split_group'),
     ...syncColumns,
   },
   (t) => [

@@ -14,6 +14,7 @@ export default function AddScreen() {
     amount?: string;
     fundId?: string;
     toAccountId?: string;
+    accountId?: string;
     ruleId?: string;
     note?: string;
   }>();
@@ -37,6 +38,7 @@ export default function AddScreen() {
           amount: Number.isFinite(amount) ? amount : undefined,
           fundId: params.fundId,
           toAccountId: params.toAccountId,
+          accountId: params.accountId,
           note: params.note,
         }}
         ruleId={params.ruleId}

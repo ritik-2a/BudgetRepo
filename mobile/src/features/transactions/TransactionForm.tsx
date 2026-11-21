@@ -27,9 +27,14 @@ import { groupCategories, useCategories } from '../categories/repo';
 import { useFunds } from '../funds/repo';
 import { advanceRuleById, createRuleFromTransaction } from '../recurring/repo';
 import { setPref, usePrefs } from '../settings/repo';
+import { createSplitBill } from '../split/repo';
+import { EMPTY_SPLIT, SplitEditor, splitFromState, type SplitState } from '../split/SplitEditor';
 import {
   createTransaction,
   deleteTransaction,
+  deleteSplitGroup,
+  getSplitParts,
+  restoreSplitGroup,
   restoreTransaction,
   updateTransaction,
   type TransactionInput,
@@ -82,6 +87,7 @@ export function TransactionForm({
   const [date, setDate] = useState(initial?.date ?? todayISO());
   const [note, setNote] = useState(initial?.note ?? '');
   const [repeat, setRepeat] = useState(false);
+  const [split, setSplit] = useState<SplitState>(EMPTY_SPLIT);
   const [errors, setErrors] = useState<DraftErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -92,7 +98,7 @@ export function TransactionForm({
   const effectiveAccountId =
     accountId ??
     (accounts.some((a) => a.id === prefs.lastAccountId) ? prefs.lastAccountId : null) ??
-    accounts.find((a) => a.type !== 'credit_card')?.id ??
+    accounts.find((a) => a.type !== 'credit_card' && a.type !== 'receivable')?.id ??
     accounts[0]?.id ??
     null;
 
@@ -149,6 +155,27 @@ export function TransactionForm({
       if (editId) {
         updateTransaction(editId, input);
         toast.success('Changes saved', `${formatINR(input.amount)} · ${labelFor(input)}`);
+      } else if (split.enabled && input.type === 'expense') {
+        const result = splitFromState(input.amount, split);
+        if (!result.ok) {
+          toast.error("Can't split this bill", result.error);
+          return;
+        }
+        const label = labelFor(input) || 'Bill';
+        const { group } = createSplitBill(input, result, label);
+        const owed = result.shares.reduce((sum, x) => sum + x.amount, 0);
+        const friendPaid = accounts.find((a) => a.id === input.accountId)?.type === 'receivable';
+        toast.show('success', {
+          title: 'Split bill saved',
+          message: friendPaid
+            ? `Your share ${formatINR(result.mine)} · you owe ${accounts.find((a) => a.id === input.accountId)?.name}`
+            : `Your share ${formatINR(result.mine)} · friends owe you ${formatINR(owed)}`,
+          action: { label: 'Undo', onPress: () => deleteSplitGroup(group) },
+        });
+        setAmountText('');
+        setNote('');
+        setCategoryId(null);
+        setSplit(EMPTY_SPLIT);
       } else {
         const id = createTransaction(ruleId ? { ...input, recurringRuleId: ruleId } : input);
         if (ruleId) advanceRuleById(ruleId);
@@ -165,7 +192,7 @@ export function TransactionForm({
         setCategoryId(null);
       }
       setPref('lastAccountId', input.accountId);
-      if (input.type === 'expense') {
+      if (input.type === 'expense' && !split.enabled) {
         for (const a of budgetAlertsAfterExpense(
           input.categoryId ?? null,
           input.date,
@@ -185,17 +212,25 @@ export function TransactionForm({
 
   const remove = async () => {
     if (!editId) return;
+    const group = initial?.splitGroup ?? null;
+    const parts = group ? getSplitParts(group).length : 1;
     const ok = await confirm({
-      title: 'Delete this transaction?',
-      message: `${amount ? formatINR(amount) : ''} on ${date}. Balances and totals will update.`,
+      title: group ? 'Delete the whole split bill?' : 'Delete this transaction?',
+      message: group
+        ? `This removes all ${parts} parts (your share and friends' shares). Balances update.`
+        : `${amount ? formatINR(amount) : ''} on ${date}. Balances and totals will update.`,
       destructive: true,
     });
     if (!ok) return;
     try {
-      deleteTransaction(editId);
+      if (group) deleteSplitGroup(group);
+      else deleteTransaction(editId);
       toast.show('success', {
-        title: 'Transaction deleted',
-        action: { label: 'Undo', onPress: () => restoreTransaction(editId) },
+        title: group ? 'Split bill deleted' : 'Transaction deleted',
+        action: {
+          label: 'Undo',
+          onPress: () => (group ? restoreSplitGroup(group) : restoreTransaction(editId)),
+        },
       });
       onDone?.();
     } catch (e) {
@@ -428,7 +463,22 @@ export function TransactionForm({
         returnKeyType="done"
       />
 
-      {!editId ? (
+      {!editId && type === 'expense' ? (
+        <SplitEditor
+          total={amount}
+          value={split}
+          onChange={setSplit}
+          payerIsFriend={accounts.find((a) => a.id === effectiveAccountId)?.type === 'receivable'}
+        />
+      ) : null}
+      {editId && initial?.splitGroup ? (
+        <AppText variant="caption" muted>
+          This is part of a split bill. To change how it was split, delete it (all parts go
+          together) and add it again.
+        </AppText>
+      ) : null}
+
+      {!editId && !split.enabled ? (
         <ClayCard>
           <SwitchRow
             icon="repeat"

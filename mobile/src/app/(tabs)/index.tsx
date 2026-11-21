@@ -3,11 +3,10 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, ClayCard, IconBadge, ListCard, Screen, SectionTitle } from '@/components/clay';
-import { Banner, EmptyState, ErrorState, Skeleton, SkeletonList } from '@/components/feedback';
-import { useAccountBalances, type AccountWithBalance } from '@/features/accounts/repo';
-import { useCardActivity } from '@/features/analytics/queries';
+import { Banner, EmptyState, ErrorState, SkeletonList } from '@/components/feedback';
 import { useBudgetStatus } from '@/features/budgets/repo';
 import { CommuteCard } from '@/features/commute/CommuteCard';
+import { MoneyOverview } from '@/features/accounts/MoneyOverview';
 import { DueReminders } from '@/features/recurring/DueReminders';
 import { PeopleSummary } from '@/features/split/PeopleSummary';
 import { QuickTravel } from '@/features/transactions/QuickTravel';
@@ -15,9 +14,7 @@ import { totalsQuery, useTransactions } from '@/features/transactions/repo';
 import { TxListItem } from '@/features/transactions/TxListItem';
 import { useLiveData } from '@/db/useLiveData';
 import { toMonthTotals } from '@/features/summary/queries';
-import { getCardCycle } from '@/lib/billing-cycle';
-import { cardStatement } from '@/lib/commute';
-import { formatDate, formatMonth, monthRange } from '@/lib/dates';
+import { formatMonth, monthRange } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
 import { useTheme } from '@/theme';
 
@@ -32,19 +29,7 @@ export default function HomeScreen() {
   const totals = toMonthTotals(totalsQ.data);
   const recent = useTransactions({ start: '0000-01-01', end: '9999-12-31', limit: 6 });
   const budget = useBudgetStatus(now);
-  const balances = useAccountBalances();
-  // Real money right now, shown under the monthly figure so the two aren't confused.
-  const inBank = balances.data
-    .filter((a) => a.type === 'bank' || a.type === 'wallet' || a.type === 'cash')
-    .reduce((sum, a) => sum + a.balance, 0);
-  const cardDue = balances.data
-    .filter((a) => a.type === 'credit_card')
-    .reduce((sum, a) => sum + Math.max(0, a.outstanding), 0);
-  const cards = balances.data.filter((a) => a.type === 'credit_card' && a.statementDay && a.dueDay);
 
-  const remaining = totals.income - totals.spent - totals.invested;
-  const savingsRate =
-    totals.income > 0 ? Math.round(((totals.income - totals.spent) / totals.income) * 100) : null;
   const hot = [budget.data.overall, ...budget.data.lines].filter(
     (l): l is NonNullable<typeof l> => !!l && l.ratio >= 0.8,
   );
@@ -54,53 +39,9 @@ export default function HomeScreen() {
 
   return (
     <Screen title="Overview" subtitle={`${greeting} · ${formatMonth(now)}`}>
-      {totalsQ.error ? (
-        <ErrorState title="Couldn't load this month" error={totalsQ.error} />
-      ) : totalsQ.loading ? (
-        <ClayCard style={styles.hero}>
-          <Skeleton width="40%" height={12} />
-          <Skeleton width="65%" height={34} />
-          <Skeleton width="50%" height={12} />
-        </ClayCard>
-      ) : (
-        <ClayCard tint={t.colors.hero} style={styles.hero}>
-          <AppText variant="label" color={t.colors.onHeroMuted}>
-            Left this month
-          </AppText>
-          <AppText variant="display" color={t.colors.onHero}>
-            {formatINR(remaining)}
-          </AppText>
-          <AppText variant="caption" color={t.colors.onHeroMuted}>
-            {savingsRate === null
-              ? 'Add your salary to see your savings rate'
-              : `Savings rate ${savingsRate}% · after spending and investing`}
-          </AppText>
-          <Pressable
-            onPress={() => router.push('/accounts')}
-            accessibilityRole="button"
-            accessibilityLabel={`In bank ${formatINR(inBank)}, card due ${formatINR(cardDue)}`}
-            style={[styles.heroSplit, { borderTopColor: t.colors.heroTrack }]}
-          >
-            <View style={styles.heroCol}>
-              <AppText variant="caption" color={t.colors.onHeroMuted}>
-                In bank
-              </AppText>
-              <AppText variant="subtitle" color={t.colors.onHero}>
-                {formatINR(inBank)}
-              </AppText>
-            </View>
-            <View style={[styles.heroCol, styles.heroRight]}>
-              <AppText variant="caption" color={t.colors.onHeroMuted}>
-                Card due
-              </AppText>
-              <AppText variant="subtitle" color={t.colors.onHero}>
-                {formatINR(cardDue)}
-              </AppText>
-            </View>
-          </Pressable>
-        </ClayCard>
-      )}
+      <MoneyOverview />
 
+      <SectionTitle title={`This month · ${formatMonth(now)}`} />
       <View style={styles.tiles}>
         <StatTile label="Income" value={totals.income} icon="arrow-down" color={t.colors.income} />
         <StatTile label="Spent" value={totals.spent} icon="arrow-up" color={t.colors.expense} />
@@ -115,9 +56,6 @@ export default function HomeScreen() {
       {/* Due items (salary etc.) and alerts */}
       <DueReminders />
       <PeopleSummary />
-      {cards.map((c) => (
-        <CardDueAlert key={c.id} card={c} />
-      ))}
       {hot.slice(0, 2).map((l) => (
         <Pressable
           key={l.budget.id}
@@ -198,45 +136,6 @@ export default function HomeScreen() {
   );
 }
 
-function CardDueAlert({ card }: { card: AccountWithBalance }) {
-  const cycle = getCardCycle(card.statementDay!, card.dueDay!);
-  const act = useCardActivity(card.id, cycle.lastEnd);
-  const a = act.row;
-  if (!a) return null;
-  const due = cardStatement({
-    opening: card.openingBalance,
-    spendToStatement: a.spendToStatement,
-    creditsToStatement: a.creditsToStatement,
-    paidAfterStatement: a.paidAfterStatement,
-  }).dueRemaining;
-  if (due === 0 || cycle.daysToDue > 5) return null;
-  const overdue = cycle.daysToDue < 0;
-  return (
-    <Pressable
-      onPress={() =>
-        router.navigate({
-          pathname: '/add',
-          params: { type: 'transfer', toAccountId: card.id, amount: String(due) },
-        })
-      }
-      accessibilityRole="button"
-      accessibilityHint="Log the bill payment"
-    >
-      <Banner
-        tone={overdue || cycle.daysToDue <= 1 ? 'error' : 'warning'}
-        title={
-          overdue
-            ? `${card.name} bill overdue`
-            : cycle.daysToDue === 0
-              ? `${card.name} bill due today`
-              : `${card.name} bill due in ${cycle.daysToDue} days`
-        }
-        message={`${formatINR(due)} to pay by ${formatDate(cycle.dueDate)}. Tap to log the payment.`}
-      />
-    </Pressable>
-  );
-}
-
 function StatTile({
   label,
   value,
@@ -290,16 +189,6 @@ function Shortcut({
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: 8, paddingTop: 22, paddingBottom: 16 },
-  heroSplit: {
-    flexDirection: 'row',
-    marginTop: 8,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  heroCol: { flex: 1, gap: 2 },
-  heroRight: { alignItems: 'flex-end' },
-  dim: { opacity: 0.9 },
   tiles: { flexDirection: 'row', gap: 12 },
   tile: { flex: 1, gap: 6, padding: 14 },
   shortcuts: { flexDirection: 'row', gap: 10 },

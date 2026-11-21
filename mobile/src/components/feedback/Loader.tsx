@@ -1,6 +1,5 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -46,21 +45,15 @@ export function FullScreenLoader({
       accessibilityLabel={message}
       accessibilityLiveRegion="polite"
     >
-      <Animated.View
-        style={[
-          styles.logo,
-          {
-            backgroundColor: t.colors.primary,
-            borderRadius: t.radius.lg,
-            boxShadow: t.shadow('raised'),
-          },
-          logoStyle,
-        ]}
-      >
-        <Ionicons name="wallet" size={44} color={t.colors.onPrimary} />
+      <Animated.View style={[styles.logo, { boxShadow: t.shadow('raised') }, logoStyle]}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logoImage}
+          accessibilityIgnoresInvertColors
+        />
       </Animated.View>
       <AppText variant="title" style={styles.brand}>
-        Budget Tracker
+        Clayfin
       </AppText>
       <ActivityIndicator size="large" color={t.colors.primary} style={styles.spinner} />
       <AppText variant="subtitle">{message}</AppText>
@@ -88,7 +81,8 @@ export function InlineLoader({ message = 'Loading…' }: { message?: string }) {
 
 const styles = StyleSheet.create({
   full: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8 },
-  logo: { width: 88, height: 88, alignItems: 'center', justifyContent: 'center' },
+  logo: { width: 96, height: 96, borderRadius: 24 },
+  logoImage: { width: 96, height: 96, borderRadius: 24 },
   brand: { marginTop: 16 },
   spinner: { marginTop: 24, marginBottom: 8 },
   center: { textAlign: 'center', maxWidth: 280 },

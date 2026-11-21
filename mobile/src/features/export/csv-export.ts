@@ -40,7 +40,7 @@ export async function exportTransactionsCSV(
     ]),
   );
 
-  const file = new File(Paths.cache, `budget-tracker-${todayISO()}.csv`);
+  const file = new File(Paths.cache, `clayfin-${todayISO()}.csv`);
   if (file.exists) file.delete();
   file.create();
   // BOM so Excel opens ₹ and other UTF-8 text correctly.

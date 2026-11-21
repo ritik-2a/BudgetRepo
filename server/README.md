@@ -1,4 +1,4 @@
-# Budget Tracker sync server
+# Clayfin sync server
 
 Small Fastify API that stores the app's data in MongoDB Atlas. The phone never sees the
 database password; it only talks to this server with an email/password account.

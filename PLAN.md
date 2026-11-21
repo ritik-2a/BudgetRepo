@@ -1,4 +1,4 @@
-# Budget & Expense Tracker — Project Plan
+# Clayfin (Budget & Expense Tracker) — Project Plan
 
 > Status: **v4 — Phases 0–4 built, cloud sync + OTA updates live on Vercel** (2026-11-22). Store builds deferred. Built from the original notes in `Plan`.
 

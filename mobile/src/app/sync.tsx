@@ -173,7 +173,7 @@ export default function SyncScreen() {
       <Banner
         tone="info"
         title="Back up and sync your data"
-        message="Your data is saved to your MongoDB Atlas database through the Budget Tracker server, and stays in sync across your phones."
+        message="Your data is saved to your MongoDB Atlas database through the Clayfin server, and stays in sync across your phones."
       />
 
       <ClayCard style={styles.gap}>
@@ -187,8 +187,7 @@ export default function SyncScreen() {
           keyboardType="url"
         />
         <AppText variant="caption" muted>
-          Your Budget Tracker server on Vercel. Leave this as is unless you host the server
-          somewhere else.
+          Your Clayfin server on Vercel. Leave this as is unless you host the server somewhere else.
         </AppText>
         <ClayButton
           title="Test connection"

@@ -1,5 +1,5 @@
 /**
- * Two-way sync with the Budget Tracker server (which stores data in MongoDB Atlas).
+ * Two-way sync with the Clayfin server (which stores data in MongoDB Atlas).
  *
  * - Push: every row whose `updatedAt` is newer than the last successful push.
  * - Pull: every row the server has changed since our cursor.

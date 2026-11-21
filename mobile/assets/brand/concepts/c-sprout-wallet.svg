@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Concept C — Sprout Wallet</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E9ECF8"/>
+      <stop offset="1" stop-color="#C9CFEA"/>
+    </linearGradient>
+    <linearGradient id="wallet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A80FF"/>
+      <stop offset="1" stop-color="#4A3CD8"/>
+    </linearGradient>
+    <linearGradient id="flap" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A69EFF"/>
+      <stop offset="1" stop-color="#6355EC"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9AF3D0"/>
+      <stop offset="1" stop-color="#1E9E70"/>
+    </linearGradient>
+    <radialGradient id="gold" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFF1B8"/>
+      <stop offset="0.55" stop-color="#FFCB4D"/>
+      <stop offset="1" stop-color="#E39A12"/>
+    </radialGradient>
+    <filter id="clay" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="22"/>
+      <feOffset dx="14" dy="28" result="blur"/>
+      <feFlood flood-color="#5C64A3" flood-opacity="0.45"/>
+      <feComposite in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
+  <!-- inner clay highlight on the tile -->
+  <rect x="18" y="18" width="988" height="988" rx="216" fill="none" stroke="#FFFFFF" stroke-width="16" opacity="0.7"/>
+
+  <!-- sprout stem + leaves (behind the wallet) -->
+  <path d="M512 520 C 512 420, 512 360, 512 300" stroke="#1E9E70" stroke-width="30" stroke-linecap="round" fill="none"/>
+  <g filter="url(#clay)">
+    <path d="M512 330 C 430 330, 360 270, 352 182 C 440 182, 506 240, 512 330 Z" fill="url(#leaf)"/>
+    <path d="M512 300 C 600 300, 676 236, 690 140 C 594 140, 520 206, 512 300 Z" fill="url(#leaf)"/>
+  </g>
+  <path d="M392 204 C 430 230, 470 270, 500 316" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <path d="M664 164 C 620 196, 570 240, 526 290" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.55"/>
+
+  <!-- wallet body -->
+  <g filter="url(#clay)">
+    <rect x="196" y="440" width="632" height="404" rx="110" fill="url(#wallet)"/>
+  </g>
+  <rect x="236" y="470" width="300" height="60" rx="30" fill="#FFFFFF" opacity="0.32" filter="url(#blur8)"/>
+
+  <!-- clasp flap with coin -->
+  <g filter="url(#clay)">
+    <rect x="600" y="574" width="270" height="150" rx="75" fill="url(#flap)"/>
+    <circle cx="708" cy="649" r="46" fill="url(#gold)"/>
+  </g>
+  <ellipse cx="694" cy="632" rx="16" ry="10" fill="#FFFFFF" opacity="0.8" filter="url(#blur8)"/>
+</svg>

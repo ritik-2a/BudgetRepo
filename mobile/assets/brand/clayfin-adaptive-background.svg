@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024"><defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8277FF"/><stop offset="1" stop-color="#4536CF"/></linearGradient>
+  <radialGradient id="bgGlow" cx="0.28" cy="0.18" r="0.75"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/><stop offset="0.65" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+  <linearGradient id="mint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8BF0C9"/><stop offset="1" stop-color="#1FA877"/></linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A9D6FF"/><stop offset="1" stop-color="#3478E0"/></linearGradient>
+  <linearGradient id="coral" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB3A7"/><stop offset="1" stop-color="#E85A63"/></linearGradient>
+  <radialGradient id="gold" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#FFF1B8"/><stop offset="0.55" stop-color="#FFCB4D"/><stop offset="1" stop-color="#E39A12"/></radialGradient>
+  <filter id="clay" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="20"/><feOffset dx="10" dy="26" result="blur"/>
+    <feFlood flood-color="#1A1063" flood-opacity="0.45"/><feComposite in2="blur" operator="in" result="shadow"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="blur12"><feGaussianBlur stdDeviation="12"/></filter>
+  <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter></defs><rect width="1024" height="1024" fill="url(#bg)"/><rect width="1024" height="1024" fill="url(#bgGlow)"/></svg>

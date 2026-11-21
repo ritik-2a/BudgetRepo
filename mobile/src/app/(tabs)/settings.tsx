@@ -185,7 +185,7 @@ export default function SettingsScreen() {
       {__DEV__ ? <FeedbackPreview /> : null}
 
       <AppText variant="caption" muted style={styles.version}>
-        Budget Tracker v{Constants.expoConfig?.version ?? '1.0.0'} · stored on this device
+        Clayfin v{Constants.expoConfig?.version ?? '1.0.0'} · stored on this device
       </AppText>
     </Screen>
   );

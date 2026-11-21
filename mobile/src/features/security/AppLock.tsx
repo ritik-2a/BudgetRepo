@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, StyleSheet, View } from 'react-native';
+import { AppState, Image, StyleSheet, View } from 'react-native';
 
 import { AppText, ClayButton } from '@/components/clay';
 import { useTheme } from '@/theme';
@@ -25,7 +25,7 @@ export async function canUseAppLock(): Promise<{ ok: boolean; reason?: string }>
   return { ok: true };
 }
 
-export async function authenticate(reason = 'Unlock Budget Tracker'): Promise<boolean> {
+export async function authenticate(reason = 'Unlock Clayfin'): Promise<boolean> {
   const res = await LocalAuthentication.authenticateAsync({
     promptMessage: reason,
     cancelLabel: 'Cancel',
@@ -88,15 +88,13 @@ export function AppLockGate({ children }: { children: ReactNode }) {
           style={[StyleSheet.absoluteFill, styles.lock, { backgroundColor: t.colors.background }]}
           accessibilityViewIsModal
         >
-          <View
-            style={[
-              styles.icon,
-              { backgroundColor: t.colors.primary, boxShadow: t.shadow('raised') },
-            ]}
-          >
-            <Ionicons name="lock-closed" size={40} color={t.colors.onPrimary} />
+          <View style={[styles.iconWrap, { boxShadow: t.shadow('raised') }]}>
+            <Image source={require('@/assets/images/logo.png')} style={styles.icon} />
+            <View style={[styles.lockBadge, { backgroundColor: t.colors.surface }]}>
+              <Ionicons name="lock-closed" size={18} color={t.colors.primary} />
+            </View>
           </View>
-          <AppText variant="title">Budget Tracker is locked</AppText>
+          <AppText variant="title">Clayfin is locked</AppText>
           <AppText variant="caption" muted style={styles.center}>
             Use your fingerprint, face or phone PIN to continue.
           </AppText>
@@ -115,6 +113,17 @@ export function AppLockGate({ children }: { children: ReactNode }) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   lock: { alignItems: 'center', justifyContent: 'center', gap: 14, padding: 32, zIndex: 2000 },
-  icon: { width: 84, height: 84, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 92, height: 92, borderRadius: 24 },
+  icon: { width: 92, height: 92, borderRadius: 24 },
+  lockBadge: {
+    position: 'absolute',
+    right: -8,
+    bottom: -8,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   center: { textAlign: 'center' },
 });

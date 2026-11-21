@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "Budget Tracker",
-    "slug": "budget-tracker",
+    "name": "Clayfin",
+    "slug": "clayfin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "budgettracker",
+    "scheme": "clayfin",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.ritik.budgettracker",
       "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E9ECF5",
+        "backgroundColor": "#5B50E6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -31,9 +31,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#E9ECF5",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120,
+          "backgroundColor": "#E9ECF5",
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#171925"
+          }
         }
       ],
       "expo-sqlite",
@@ -42,7 +46,7 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow Budget Tracker to use Face ID to unlock your financial data."
+          "faceIDPermission": "Allow Clayfin to use Face ID to unlock your financial data."
         }
       ],
       [

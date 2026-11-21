@@ -1,10 +1,13 @@
-# Budget Tracker
+<p align="center"><img src="mobile/assets/brand/clayfin-logo.png" width="120" alt="Clayfin logo"></p>
+
+# Clayfin
 
 Personal expense, credit-card, travel and mutual-fund tracker for Android and iOS.
 Built with React Native + Expo (TypeScript), local SQLite storage and a claymorphic UI.
 
 - **Plan & roadmap:** [PLAN.md](PLAN.md)
 - **App source:** [mobile/](mobile/)
+- **Brand:** logo sources in [mobile/assets/brand/](mobile/assets/brand/)
 - **Sync server:** [server/](server/) (Fastify + MongoDB Atlas)
 
 ## Run in development

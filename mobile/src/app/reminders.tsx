@@ -30,7 +30,7 @@ export default function RemindersScreen() {
       if (!granted) {
         toast.warning(
           'Notifications are off',
-          'Allow notifications for Budget Tracker in your phone settings to get reminders.',
+          'Allow notifications for Clayfin in your phone settings to get reminders.',
         );
         return;
       }

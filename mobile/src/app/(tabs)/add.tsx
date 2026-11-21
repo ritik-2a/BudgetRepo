@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { AppText, Screen } from '@/components/clay';
 import type { TransactionType } from '@/db/schema';
@@ -14,6 +14,8 @@ export default function AddScreen() {
     amount?: string;
     fundId?: string;
     toAccountId?: string;
+    ruleId?: string;
+    note?: string;
   }>();
   const type = TYPES.includes(params.type as TransactionType)
     ? (params.type as TransactionType)
@@ -35,6 +37,21 @@ export default function AddScreen() {
           amount: Number.isFinite(amount) ? amount : undefined,
           fundId: params.fundId,
           toAccountId: params.toAccountId,
+          note: params.note,
+        }}
+        ruleId={params.ruleId}
+        onDone={() => {
+          // A reminder's prefill is one-shot: clear it so the next entry is independent.
+          if (params.ruleId) {
+            router.setParams({
+              ruleId: undefined,
+              amount: undefined,
+              note: undefined,
+              categoryId: undefined,
+              fundId: undefined,
+              type: undefined,
+            });
+          }
         }}
       />
     </Screen>

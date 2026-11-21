@@ -25,7 +25,7 @@ import { useAccounts } from '../accounts/repo';
 import { budgetAlertsAfterExpense } from '../budgets/repo';
 import { groupCategories, useCategories } from '../categories/repo';
 import { useFunds } from '../funds/repo';
-import { createRuleFromTransaction } from '../recurring/repo';
+import { advanceRuleById, createRuleFromTransaction } from '../recurring/repo';
 import { setPref, usePrefs } from '../settings/repo';
 import {
   createTransaction,
@@ -53,10 +53,13 @@ export function TransactionForm({
   initial,
   editId,
   onDone,
+  ruleId,
 }: {
   initial?: FormInitial;
   /** When set the form edits this transaction. */
   editId?: string;
+  /** Logging a due recurring item with a custom amount: advances that reminder. */
+  ruleId?: string;
   /** Called after a successful save/delete. */
   onDone?: () => void;
 }) {
@@ -147,7 +150,8 @@ export function TransactionForm({
         updateTransaction(editId, input);
         toast.success('Changes saved', `${formatINR(input.amount)} · ${labelFor(input)}`);
       } else {
-        const id = createTransaction(input);
+        const id = createTransaction(ruleId ? { ...input, recurringRuleId: ruleId } : input);
+        if (ruleId) advanceRuleById(ruleId);
         if (repeat) createRuleFromTransaction(input);
         toast.show('success', {
           title: `${TYPE_OPTIONS.find((o) => o.value === type)!.label} added`,

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, ClayButton, ClayCard, IconBadge } from '@/components/clay';
@@ -55,6 +56,19 @@ export function DueReminders() {
           skipDueRule(rule);
           toast.info('Skipped for this month');
         };
+        const variable = !tpl.amount;
+        const customAmount = () =>
+          router.navigate({
+            pathname: '/add',
+            params: {
+              type: tpl.type,
+              categoryId: tpl.categoryId ?? undefined,
+              fundId: tpl.fundId ?? undefined,
+              amount: variable ? undefined : String(tpl.amount),
+              note: tpl.note ?? undefined,
+              ruleId: rule.id,
+            },
+          });
 
         return (
           <ClayCard key={rule.id} style={styles.card}>
@@ -65,18 +79,31 @@ export function DueReminders() {
                   {title} {isIncome ? 'expected' : 'due'}
                 </AppText>
                 <AppText variant="caption" muted>
-                  {formatINR(tpl.amount)} · since {formatDate(rule.nextRun)}
+                  {variable ? 'Amount varies' : formatINR(tpl.amount)} · since{' '}
+                  {formatDate(rule.nextRun)}
                   {late > 0 ? ` (${late} day${late === 1 ? '' : 's'})` : ''}
                 </AppText>
               </View>
             </View>
             <View style={styles.row}>
-              <ClayButton
-                title={isIncome ? 'Received today' : 'Paid today'}
-                icon="checkmark"
-                onPress={done}
-                style={styles.flex}
-              />
+              {variable ? (
+                <ClayButton
+                  title="Enter amount"
+                  icon="create"
+                  onPress={customAmount}
+                  style={styles.flex}
+                />
+              ) : (
+                <ClayButton
+                  title={isIncome ? 'Received' : 'Paid'}
+                  icon="checkmark"
+                  onPress={done}
+                  style={styles.flex}
+                />
+              )}
+              {!variable ? (
+                <ClayButton title="Other amount" variant="secondary" onPress={customAmount} />
+              ) : null}
               <ClayButton title="Skip" variant="secondary" onPress={skip} />
             </View>
           </ClayCard>

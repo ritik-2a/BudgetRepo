@@ -5,6 +5,7 @@ import {
   AppText,
   ClayButton,
   ClayCard,
+  DayPicker,
   IconBadge,
   Screen,
   SegmentedControl,
@@ -21,7 +22,13 @@ import {
 import { useAccounts } from '@/features/accounts/repo';
 import { useCategories } from '@/features/categories/repo';
 import { useFunds } from '@/features/funds/repo';
-import { deleteRule, updateRule, useRules, type RecurringRule } from '@/features/recurring/repo';
+import {
+  deleteRule,
+  setRuleDay,
+  updateRule,
+  useRules,
+  type RecurringRule,
+} from '@/features/recurring/repo';
 import { rescheduleReminders } from '@/features/reminders/notifications';
 import { formatDate, ordinal } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
@@ -107,7 +114,8 @@ function RuleCard({ rule }: { rule: RecurringRule }) {
         <View style={styles.flex}>
           <AppText variant="subtitle">{title}</AppText>
           <AppText variant="caption" muted>
-            {formatINR(tpl.amount)} · every month on the {ordinal(rule.day)}
+            {tpl.amount ? formatINR(tpl.amount) : 'Amount varies'} · every month on the{' '}
+            {ordinal(rule.day)}
           </AppText>
           <AppText variant="caption" muted>
             Next: {formatDate(rule.nextRun)}
@@ -121,6 +129,15 @@ function RuleCard({ rule }: { rule: RecurringRule }) {
         ]}
         value={rule.mode}
         onChange={(mode) => apply({ mode })}
+      />
+      <DayPicker
+        label="Day of month"
+        value={rule.day}
+        onChange={(d) => {
+          setRuleDay(rule.id, d);
+          rescheduleReminders().catch(() => {});
+          toast.success('Day changed', `Every month on the ${ordinal(d)}`);
+        }}
       />
       <SwitchRow title="Active" value={rule.enabled} onChange={(enabled) => apply({ enabled })} />
       <ClayButton title="Remove" icon="trash" variant="secondary" onPress={remove} />

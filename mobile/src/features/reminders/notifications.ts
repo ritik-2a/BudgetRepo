@@ -101,6 +101,11 @@ export function planReminders(now = new Date()): Planned[] {
       .from(funds)
       .where(and(eq(funds.archived, false), eq(funds.deleted, false)))
       .all();
+    const autoFunds = new Set(
+      listActiveRules()
+        .filter((r) => r.mode === 'auto_create' && r.template.fundId)
+        .map((r) => r.template.fundId),
+    );
     for (const f of fundList) {
       if (!f.sipDay) continue;
       for (let i = 0; i < 2; i++) {
@@ -109,9 +114,11 @@ export function planReminders(now = new Date()): Planned[] {
         if (when <= now) continue;
         out.push({
           title: `SIP today: ${f.name}`,
-          body: f.sipAmount
-            ? `${formatINR(f.sipAmount)} goes out today. Log it as an investment.`
-            : 'Your SIP goes out today. Log it as an investment.',
+          body: autoFunds.has(f.id)
+            ? `${f.sipAmount ? formatINR(f.sipAmount) : 'Your SIP'} goes out today. Clayfin adds it automatically.`
+            : f.sipAmount
+              ? `${formatINR(f.sipAmount)} goes out today. Log it as an investment.`
+              : 'Your SIP goes out today. Log it as an investment.',
           when,
         });
       }

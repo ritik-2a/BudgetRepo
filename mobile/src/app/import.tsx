@@ -7,7 +7,7 @@ import { Banner, ErrorState, useToast } from '@/components/feedback';
 import { ACCOUNT_TYPE_META } from '@/features/accounts/repo';
 import { rescheduleReminders } from '@/features/reminders/notifications';
 import { applySetup, decodePayload } from '@/features/setup/importSetup';
-import { ordinal } from '@/lib/dates';
+import { formatDate, ordinal } from '@/lib/dates';
 import { formatINR } from '@/lib/money';
 
 /** clayfin://import?d=<base64url JSON> — shows what will be set up and asks to confirm. */
@@ -51,7 +51,7 @@ export default function ImportScreen() {
       <Banner
         tone="warning"
         title="Check before importing"
-        message="These accounts, funds and reminders will be added to Clayfin (accounts with the same name are updated). Existing transactions are not changed."
+        message="Everything below will be added to Clayfin. Accounts and funds with the same name are updated; existing transactions are not changed."
       />
       {p.accounts?.length ? (
         <ListCard>
@@ -81,6 +81,42 @@ export default function ImportScreen() {
               title={f.name}
               subtitle="Mutual fund"
               right={f.sipAmount ? `${formatINR(f.sipAmount)}/mo` : undefined}
+            />
+          ))}
+        </ListCard>
+      ) : null}
+      {p.transactions?.length ? (
+        <ListCard>
+          {p.transactions.map((x, i) => (
+            <ListRow
+              key={i}
+              icon={
+                x.type === 'income'
+                  ? 'arrow-down'
+                  : x.type === 'investment'
+                    ? 'trending-up'
+                    : x.type === 'transfer'
+                      ? 'swap-horizontal'
+                      : 'arrow-up'
+              }
+              title={x.note ?? x.fund ?? x.category ?? x.type}
+              subtitle={`${formatDate(x.date)} · ${x.account}${x.toAccount ? ` → ${x.toAccount}` : ''}`}
+              right={formatINR(x.amount)}
+            />
+          ))}
+        </ListCard>
+      ) : null}
+      {p.recurring?.length ? (
+        <ListCard>
+          {p.recurring.map((r) => (
+            <ListRow
+              key={r.label}
+              icon="repeat"
+              title={r.label}
+              subtitle={`Every month on the ${ordinal(r.day)} · ${
+                r.mode === 'auto_create' ? 'added automatically' : 'reminder'
+              }`}
+              right={r.amount ? formatINR(r.amount) : 'varies'}
             />
           ))}
         </ListCard>

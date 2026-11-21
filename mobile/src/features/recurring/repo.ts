@@ -5,7 +5,7 @@ import { recurringRules } from '@/db/schema';
 import { useLiveData } from '@/db/useLiveData';
 import { todayISO } from '@/lib/dates';
 import { newId } from '@/lib/id';
-import { dueOccurrences, nextOccurrence, type Frequency } from '@/lib/recurrence';
+import { dueOccurrences, firstOccurrence, nextOccurrence, type Frequency } from '@/lib/recurrence';
 
 import { createTransaction, type TransactionInput } from '../transactions/repo';
 
@@ -184,4 +184,19 @@ export function createRule(input: {
     })
     .run();
   return id;
+}
+
+/** Moves a rule to its next occurrence (after logging this one some other way). */
+export function advanceRuleById(id: string): void {
+  const r = db.select().from(recurringRules).where(eq(recurringRules.id, id)).get();
+  if (!r) return;
+  skipDueRule(toRule(r));
+}
+
+/** Changes the day of month; the next occurrence is recalculated from today. */
+export function setRuleDay(id: string, day: number): void {
+  db.update(recurringRules)
+    .set({ day, nextRun: firstOccurrence(todayISO(), 'monthly', day), updatedAt: Date.now() })
+    .where(eq(recurringRules.id, id))
+    .run();
 }

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useRef, type ComponentRef, type ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 
 import { AppText } from './AppText';
+import { KeyboardScrollContext, useKeyboardAwareScroll } from './keyboard';
 import { StatusBarScrim } from './StatusBarScrim';
 
 /** Height reserved at the bottom so content isn't hidden behind the floating tab bar. */
@@ -89,10 +90,12 @@ export function Screen({
 
   // Tab screens sit above the docked tab bar, which already handles the bottom inset.
   const bottomPad = inTabs ? TAB_BAR_SPACE : t.spacing.xl + insets.bottom;
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const kb = useKeyboardAwareScroll(scrollRef);
   const contentStyle = {
     paddingTop: insets.top + t.spacing.lg,
     paddingHorizontal: t.spacing.lg,
-    paddingBottom: footer ? t.spacing.lg : bottomPad,
+    paddingBottom: (footer ? t.spacing.lg : bottomPad) + kb.keyboardPadding,
     gap: t.spacing.lg,
   };
 
@@ -102,15 +105,21 @@ export function Screen({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {scroll ? (
-        <ScrollView
-          contentContainerStyle={contentStyle}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={refreshControl}
-        >
-          {header}
-          {children}
-        </ScrollView>
+        <KeyboardScrollContext.Provider value={kb}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={contentStyle}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            refreshControl={refreshControl}
+            onScroll={kb.onScroll}
+            scrollEventThrottle={32}
+          >
+            {header}
+            {children}
+          </ScrollView>
+        </KeyboardScrollContext.Provider>
       ) : (
         <View style={[styles.root, contentStyle]}>
           {header}

@@ -4,6 +4,7 @@ import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { AppText } from './AppText';
+import { useEnsureVisible } from './keyboard';
 
 export type ClayInputProps = TextInputProps & {
   label?: string;
@@ -24,6 +25,7 @@ export function ClayInput({
 }: ClayInputProps) {
   const t = useTheme();
   const [focused, setFocused] = useState(false);
+  const ensureVisible = useEnsureVisible();
   return (
     <View style={styles.wrap}>
       {label ? (
@@ -53,6 +55,7 @@ export function ClayInput({
           style={[styles.input, { color: t.colors.text, fontSize: t.fontSize.md }, style]}
           onFocus={(e) => {
             setFocused(true);
+            ensureVisible();
             onFocus?.(e);
           }}
           onBlur={(e) => {

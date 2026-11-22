@@ -13,6 +13,7 @@ import {
 import { useToast } from '@/components/feedback';
 import { formatINR, parseRupees } from '@/lib/money';
 import { computeSplit, type SplitMode } from '@/lib/split';
+import { useEnsureVisible } from '@/components/clay/keyboard';
 import { useTheme } from '@/theme';
 
 import { createPerson, usePeople } from '../accounts/repo';
@@ -62,6 +63,7 @@ export function SplitEditor({
   const toast = useToast();
   const people = usePeople().data;
   const [newName, setNewName] = useState('');
+  const ensureVisible = useEnsureVisible();
   const set = (patch: Partial<SplitState>) => onChange({ ...value, ...patch });
   const result = value.enabled ? splitFromState(total, value) : null;
 
@@ -117,6 +119,7 @@ export function SplitEditor({
               onChangeText={setNewName}
               placeholder="Add a friend by name"
               placeholderTextColor={t.colors.textMuted}
+              onFocus={ensureVisible}
               onSubmitEditing={addPerson}
               returnKeyType="done"
               style={[
@@ -168,6 +171,7 @@ export function SplitEditor({
                       placeholder="₹ share"
                       keyboardType="decimal-pad"
                       placeholderTextColor={t.colors.textMuted}
+                      onFocus={ensureVisible}
                       style={[
                         styles.customInput,
                         {
